@@ -1,18 +1,17 @@
-from distutils.command.config import config
-from aiogram import Dispatcher
+from unicodedata import category
+from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import CommandStart, Text
-from aiogram.types import Message
 
 from app.config import Config
-from app.handlers.menu import list_categories
-from app.keyboards import reply
+from app.handlers.menu import list_categories, show_item
+from app.keyboards import reply, inline
 
 '''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
 
 '''************************ СТАРТОВЕ ВІКНО ************************'''
 
 
-async def user_start(message: Message):
+async def user_start(message: types.Message):
     try:
         bot = message.bot
 
@@ -27,19 +26,25 @@ async def user_start(message: Message):
                              f'напишіть йому: \n{config.tg_bot.bot_url}',)
 
 
-async def command_delivery(message: Message):
+async def command_delivery(message: types.Message):
     await message.answer('Доставка - вівторок, п\'ятниця.\n' +
                          'Безкоштовна доставка від 800 грн.\n' +
                          'Самовивіз з вул. Шовковичної 13/2. -10%')
 
 
-async def command_location(message: Message):
+async def command_location(message: types.Message):
     await message.answer('м. Київ, вул. Шовковичнa 13/2.\n'
                          'Гриль-бар "Мисливці"')
 
 
-async def command_menu(message: Message):
+async def command_menu(message: types.Message):
     await list_categories(message)
+
+
+async def command_show_item(call: types.CallbackQuery, callback_data: dict):
+    await show_item(call, callback_data['category'])
+
+
 
 
 def register_user(dp: Dispatcher):
@@ -51,4 +56,6 @@ def register_user(dp: Dispatcher):
     dp.register_message_handler(command_location, Text(equals='Розташування',
                                                        ignore_case=True))
     dp.register_message_handler(command_menu, Text(equals='Меню',
-                                                       ignore_case=True))
+                                                   ignore_case=True))
+    # dp.register_callback_query_handler(
+    #     command_show_item, inline.menu_cd.filter())
