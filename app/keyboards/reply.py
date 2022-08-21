@@ -15,3 +15,17 @@ kb_start = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
+
+'''************************ Вікно каталогу ************************'''
+
+kb_catalog = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text='Ваше замовлення')
+        ],
+        [
+            KeyboardButton(text='<- Повернутися')
+        ]
+    ],
+    resize_keyboard=True
+)

@@ -38,6 +38,9 @@ async def command_location(message: types.Message):
 
 
 async def command_menu(message: types.Message):
+    await message.bot.send_message(message.from_user.id,
+                                   'Меню',
+                                   reply_markup=reply.kb_catalog)
     await list_categories(message)
 
 
@@ -45,10 +48,8 @@ async def command_show_item(call: types.CallbackQuery, callback_data: dict):
     await show_item(call, callback_data['category'])
 
 
-
-
 def register_user(dp: Dispatcher):
-    dp.register_message_handler(user_start, Text(equals=['start', 'замовити'],
+    dp.register_message_handler(user_start, Text(equals=['start', 'замовити', '<- Повернутися'],
                                                  ignore_case=True))
     dp.register_message_handler(user_start, CommandStart())
     dp.register_message_handler(command_delivery, Text(equals='Умови доставки',

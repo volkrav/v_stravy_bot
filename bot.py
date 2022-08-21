@@ -34,6 +34,7 @@ def register_all_handlers(dp: Dispatcher):
     register_admin(dp)
     register_user(dp)
     register_menu(dp)
+    register_echo(dp)
 
 
 async def main():
