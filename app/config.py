@@ -9,6 +9,7 @@ class TgBot:
     token: str
     admin_ids: List[int]
     use_redis: bool
+    bot_url: str
 
 
 @dataclass
@@ -23,12 +24,18 @@ class DbConfig:
 class Miscellaneous:
     other_params: str = None
 
+@dataclass
+class Categories:
+    categories: List[str]
+
+
 
 @dataclass
 class Config:
     tg_bot: TgBot
     db: DbConfig
     misc: Miscellaneous
+    cat_list: Categories
 
 
 def load_config(path: str = None) -> Config:
@@ -39,7 +46,8 @@ def load_config(path: str = None) -> Config:
         tg_bot=TgBot(
             token=env.str('BOT_TOKEN'),
             admin_ids=list(map(int, env.list('ADMINS'))),
-            use_redis=env.bool('USE_REDIS')
+            use_redis=env.bool('USE_REDIS'),
+            bot_url=env.str('BOT_URL')
         ),
         db=DbConfig(
             host=env.str('DB_HOST'),
@@ -47,5 +55,6 @@ def load_config(path: str = None) -> Config:
             user=env.str('DB_USER'),
             database=env.str('DB_NAME')
         ),
-        misc=Miscellaneous()
+        misc=Miscellaneous(),
+        cat_list=Categories(list(map(str, env.list('CATEGORIES_LIST'))))
     )

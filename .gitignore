@@ -7,6 +7,7 @@ __pycache__
 Pipfile*
 
 runbot.sh
+*.bak
 
 # Distribution / packaging
 .Python build/
