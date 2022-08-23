@@ -1,0 +1,22 @@
+'''
+categories:
+id: int,
+category_code: str,
+category_name: str,
+category_alias: str
+'''
+
+'''
+items:
+id: int,
+uid: str,
+title: str,
+price: str,
+descr: str,
+text: str,
+img: str,
+quantity: str (quantity, якщо None, то в наявності, якщо 0 – нема),
+gallery: list[str],
+url: str,
+partuids: list[str] (partuids)
+'''
