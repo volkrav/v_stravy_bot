@@ -6,32 +6,32 @@ from categories import categories_id, header
 
 def main():
 
-    def get_data(categories_id: dict, header: str):
-        for code in categories_id.values():
-            tilda_url = f'https://store.tildacdn.com/api/getproductslist/?storepartuid={code}]'
-            time.sleep(1)
-            yield requests.get(tilda_url, headers=header).json()
+    def get_items(categories_id: dict, header: str) -> dict:
+        tilda_url = f'https://store.tildacdn.com/api/getproductslist/?storepartuid='
+        time.sleep(1)
+        for items in (requests.get(tilda_url+str(category_id), headers=header)
+                      for category_id in categories_id.values()):
+            yield items.json()['products']
 
-    def get_item(data):
-        for i in range(len(data['products'])):
-            yield data['products'][i]
+    def get_item(items: dict) -> dict:
+        for i in range(len(items)):
+            yield items[i]
 
-    for data in get_data(categories_id, header):
-
-        for item_in_cat in get_item(data):
-            item_code = item_in_cat['uid'].strip()
-            item_name = item_in_cat['title'].strip()
-            item_price = item_in_cat['price'].strip()
-            item_descr = item_in_cat['descr'].replace('<br />', ' ').strip()
-            item_text = item_in_cat['text'].strip()
-            item_img = item_in_cat['editions'][0]['img'].strip()
-            item_quantity = item_in_cat['quantity'].strip()
+    for items in get_items(categories_id, header):
+        for item in get_item(items):
+            item_code = item['uid'].strip()
+            item_name = item['title'].strip()
+            item_price = item['price'].strip()
+            item_descr = item['descr'].replace('<br />', ' ').strip()
+            item_text = item['text'].strip()
+            item_img = item['editions'][0]['img'].strip()
+            item_quantity = item['quantity'].strip()
             item_gallery = []
-            for img_dict in json.loads(item_in_cat['gallery']):
+            for img_dict in json.loads(item['gallery']):
                 for link in img_dict.values():
                     item_gallery.append(link.strip())
-            item_url = item_in_cat['url'].strip()
-            item_categories_codes = json.loads(item_in_cat['partuids'])
+            item_url = item['url'].strip()
+            item_categories_codes = json.loads(item['partuids'])
             print(item_name)
 
 
