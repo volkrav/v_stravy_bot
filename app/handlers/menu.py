@@ -1,6 +1,8 @@
 from typing import Union
 from aiogram import types, Dispatcher
-from app.keyboards.inline import categories_keyboard, item_keyboard, menu_cd
+from app.keyboards.inline import categories_keyboard, products_keyboard, menu_cd
+from app.handlers import start
+from app.keyboards import reply
 
 
 async def list_categories(message: Union[types.Message, types.CallbackQuery], **kwargs):
@@ -14,10 +16,16 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], **
 
 
 async def show_item(message: types.CallbackQuery, category, **kwargs):
-    markup = await item_keyboard(category)
+    markup = await products_keyboard(category)
     call = message
 
     await call.message.edit_reply_markup(markup)
+
+# async def command_back(message: types.Message, mess_id):
+#     # await message.delete_reply_markup()
+#     # await start.user_start(message)
+
+#     await message.bot.delete_message(chat_id=message.from_user.id, message_id=mess_id)
 
 
 async def navigate(call: types.CallbackQuery, callback_data: dict):
@@ -38,3 +46,4 @@ async def navigate(call: types.CallbackQuery, callback_data: dict):
 def register_menu(dp: Dispatcher):
     dp.register_callback_query_handler(navigate,
                                        menu_cd.filter())
+    # dp.register_message_handler(command_back, text='back')

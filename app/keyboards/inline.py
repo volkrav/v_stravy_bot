@@ -1,17 +1,13 @@
 from aiogram.utils.callback_data import CallbackData
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from app.models import db_api
+
 
 '''************************ Меню ************************'''
 
 
 menu_cd = CallbackData('show_menu', 'level', 'category', 'item')
-
-
-categories = ['Новинки', 'Перші страви', 'Випічка', 'Пельмені',
-              'Вареники', 'Котлети', 'Чебуреки', 'Крученики', 'Млинці']
-
-items = {'Котлети': ['котлета1', 'котлета2', 'котлета3']}
 
 
 def make_callback_data(level, category='0', item='0'):
@@ -21,12 +17,14 @@ def make_callback_data(level, category='0', item='0'):
 async def categories_keyboard():
     CURRENT_LEVEL = 0
 
+    categories = await db_api.load_categories()
+
     markup = InlineKeyboardMarkup()
 
     for category in categories:
-        button_text = f'{category}'
+        button_text = f'{category["name"]}'
         callback_data = make_callback_data(
-            level=CURRENT_LEVEL+1, category=category)
+            level=CURRENT_LEVEL+1, category=category['partuid'])
 
         markup.insert(
             InlineKeyboardButton(
@@ -38,23 +36,26 @@ async def categories_keyboard():
     return markup
 
 
-async def item_keyboard(category):
+async def products_keyboard(category):
     CURRENT_LEVEL = 1
+
+    products = await db_api.load_products()
+
 
     markup = InlineKeyboardMarkup()
 
-    for k, v in items.items():
-        if category == k:
-            for item in v:
-                button_text = item
-                callback_data = item
+    for product in products:
+        if category in product['partuids']:
+            print(f"{category} in {product['partuids']} where {product['uid']}")
+            button_text = product['title']
+            callback_data = product['uid']
 
-                markup.insert(
-                    InlineKeyboardButton(
-                        text=button_text,
-                        callback_data=callback_data
-                    )
+            markup.add(
+                InlineKeyboardButton(
+                    text=button_text,
+                    callback_data=callback_data
                 )
+            )
 
     markup.row(
         InlineKeyboardButton(
