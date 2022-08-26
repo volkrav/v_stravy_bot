@@ -1,8 +1,8 @@
-import categories, req_js
+import categories, products
 
 def main():
     categories.main()
-    req_js.main()
+    products.main()
 
 if __name__ == '__main__':
     main()

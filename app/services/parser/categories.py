@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from DBcm_sync import UseDataBase
 
 categories_id = {
     'novinki': 275228065091, 'pershispravy': 588357731541, 'vypichka': 495017585511,
@@ -19,25 +20,27 @@ def main():
     response = requests.get(base_url, headers=header)
     soup = BeautifulSoup(response.text, 'lxml')
 
-    data = soup.find_all('li', class_='t967__list-item')
+    data = soup.find(
+        'ul', class_='t967__list t967__menualign_left').find_all(
+        'li', class_='t967__list-item')
 
     # Отримую список словників з категоріями
-    categories = []
     for row in data:
         category_name = row.find('a', class_='t-menu__link-item').text.strip()
         category_alias = row.find(
             'a', class_='t-menu__link-item').get('href').strip('/ ')
         category_code = [code for val,
                          code in categories_id.items() if val == category_alias][0]
-
-        category = {
-            'category_code': str(category_code),
-            'category_name': category_name,
-            'category_alias': category_alias
-        }
-        categories.append(category)
-
-    print(categories)
+        try:
+            with UseDataBase() as cursor:
+                cursor.execute(
+                    f"INSERT INTO categories "
+                    f"(partuid, name, alias) "
+                    f'VALUES (?, ?, ?) ',
+                    (category_code, category_name, category_alias)
+                )
+        except Exception as err:
+            print(err.args)
 
 
 if __name__ == '__main__':

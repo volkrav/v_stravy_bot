@@ -1,6 +1,6 @@
 '''
 categories:
-id: int,
+partuid: str,
 category_code: str,
 category_name: str,
 category_alias: str
