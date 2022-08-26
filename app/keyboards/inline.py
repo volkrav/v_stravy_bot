@@ -15,7 +15,7 @@ def make_callback_data(level, category='0', item='0'):
 
 
 async def categories_keyboard():
-    CURRENT_LEVEL = 0
+    CURRENT_LEVEL = 1
 
     categories = await db_api.load_categories()
 
@@ -32,21 +32,27 @@ async def categories_keyboard():
                 callback_data=callback_data
             )
         )
+    markup.row(
+        InlineKeyboardButton(
+            text='<- Назад',
+            callback_data=make_callback_data(level=CURRENT_LEVEL-1)
+        )
+    )
 
     return markup
 
 
 async def products_keyboard(category):
-    CURRENT_LEVEL = 1
+    CURRENT_LEVEL = 2
 
     products = await db_api.load_products()
-
 
     markup = InlineKeyboardMarkup()
 
     for product in products:
         if category in product['partuids']:
-            print(f"{category} in {product['partuids']} where {product['uid']}")
+            print(
+                f"{category} in {product['partuids']} where {product['uid']}")
             button_text = product['title']
             callback_data = product['uid']
 

@@ -27,6 +27,9 @@ async def show_item(message: types.CallbackQuery, category, **kwargs):
 
 #     await message.bot.delete_message(chat_id=message.from_user.id, message_id=mess_id)
 
+async def del_markup(call:types.CallbackQuery, **kwargs):
+    await call.message.edit_reply_markup()
+
 
 async def navigate(call: types.CallbackQuery, callback_data: dict):
     current_level = callback_data.get('level')
@@ -34,8 +37,9 @@ async def navigate(call: types.CallbackQuery, callback_data: dict):
     item = callback_data.get('item')
 
     levels = {
-        '0': list_categories,
-        '1': show_item
+        '0': del_markup,
+        '1': list_categories,
+        '2': show_item
     }
 
     current_level_function = levels.get(current_level)
@@ -46,4 +50,4 @@ async def navigate(call: types.CallbackQuery, callback_data: dict):
 def register_menu(dp: Dispatcher):
     dp.register_callback_query_handler(navigate,
                                        menu_cd.filter())
-    # dp.register_message_handler(command_back, text='back')
+    # dp.register_message_handler(asd, text='back')
