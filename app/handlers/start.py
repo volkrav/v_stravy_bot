@@ -3,7 +3,7 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import CommandStart, Text
 
 from app.config import Config
-from app.handlers.menu import list_categories, show_item
+from app.handlers.menu import list_categories
 from app.keyboards import reply, inline
 
 '''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
@@ -44,8 +44,8 @@ async def command_menu(message: types.Message):
     await list_categories(message)
 
 
-async def command_show_item(call: types.CallbackQuery, callback_data: dict):
-    await show_item(call, callback_data['category'])
+# async def command_show_item(call: types.CallbackQuery, callback_data: dict):
+#     await list_products(call, callback_data['category'])
 
 
 def register_user(dp: Dispatcher):

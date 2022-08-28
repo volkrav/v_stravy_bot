@@ -19,9 +19,13 @@ def main():
         for i in range(len(products)):
             yield products[i]
 
+    # uids = set()
     for products in get_products(categories_id, header):
         for product in get_product(products):
             uid = product['uid'].strip()
+            # if uid in uids:
+            #     continue
+            # uids.add(uid)
             title = product['title'].strip()
             price = int(float(product['price'].strip()))
 
@@ -60,7 +64,8 @@ def main():
                     f'(uid, title, price, descr, text, '
                     f'img, quantity, gallery, url, partuids) '
                     f'VALUES '
-                    f'({", ".join("?" * 10)})', (
+                    f'({", ".join("?" * 10)}) '
+                    f'ON CONFLICT (uid) DO NOTHING;', (
                         uid, title, price, descr, text,
                         img, quantity, gallery, url,
                         partuids

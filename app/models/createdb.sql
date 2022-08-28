@@ -5,7 +5,7 @@
 );
 
 CREATE TABLE products (
-    uid      VARCHAR (255),
+    uid      VARCHAR (255) PRIMARY KEY,
     title    VARCHAR (255),
     price    INTEGER,
     descr    TEXT,
