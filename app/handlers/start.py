@@ -17,7 +17,7 @@ async def user_start(message: types.Message):
 
         await bot.send_message(message.from_user.id,
                                f'Смачного\n\n'
-                               f'Тут потрібен красивий вітальний текст',
+                               f'Обирайте потрібне ⤵️',
                                reply_markup=reply.kb_start
                                )
     except:
@@ -27,9 +27,12 @@ async def user_start(message: types.Message):
 
 
 async def command_delivery(message: types.Message):
-    await message.answer('Доставка - вівторок, п\'ятниця.\n' +
-                         'Безкоштовна доставка від 800 грн.\n' +
-                         'Самовивіз з вул. Шовковичної 13/2. -10%')
+    await message.answer('Замовлення доставляємо по вівторках та п\'ятницях.\n\n' +
+                         'Вартість доставки:\n' +
+                         '🚚 Кур\'єром (Центр, Поділ, Дарницький​): 150грн.\n' +
+                         '🚚 Кур\'єром (Київ​, інші райони): 180грн.\n\n' +
+                         '<b>При замовленні від 800 грн - доставка (Київ) безкоштовно</b>\n'
+                         )
 
 
 async def command_location(message: types.Message):
@@ -49,10 +52,10 @@ async def command_menu(message: types.Message):
 
 
 def register_user(dp: Dispatcher):
-    dp.register_message_handler(user_start, Text(equals=['start', 'замовити', '<- Повернутися'],
+    dp.register_message_handler(user_start, Text(equals=['start', 'замовити'],
                                                  ignore_case=True))
     dp.register_message_handler(user_start, CommandStart())
-    dp.register_message_handler(command_delivery, Text(equals='Умови доставки',
+    dp.register_message_handler(command_delivery, Text(equals='🚚 Доставка і оплата',
                                                        ignore_case=True))
     dp.register_message_handler(command_location, Text(equals='Розташування',
                                                        ignore_case=True))

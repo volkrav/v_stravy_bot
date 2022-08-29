@@ -10,6 +10,7 @@ from app.filters.admin import AdminFilter
 from app.handlers.admin import register_admin
 from app.handlers.start import register_user
 from app.handlers.menu import register_menu
+from app.handlers.order import register_order
 from app.handlers.echo import register_echo
 from app.middlewares.db import EnvironmentMiddleware
 from app.middlewares.del_mess import DelMessage
@@ -34,6 +35,7 @@ def register_all_handlers(dp: Dispatcher):
     register_admin(dp)
     register_user(dp)
     register_menu(dp)
+    register_order(dp)
     register_echo(dp)
 
 

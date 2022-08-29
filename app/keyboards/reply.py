@@ -9,8 +9,15 @@ kb_start = ReplyKeyboardMarkup(
             KeyboardButton(text='Меню')
         ],
         [
-            KeyboardButton(text='Розташування'),
-            KeyboardButton(text='Умови доставки'),
+            KeyboardButton(text='ℹ️ Про нас'),
+            KeyboardButton(text='📞 Контакти')
+        ],
+        [
+            KeyboardButton(text='💪 Самовивіз'),
+            KeyboardButton(text='🚚 Доставка і оплата'),
+        ],
+        [
+            KeyboardButton(text='😇 Особиста інформація')
         ]
     ],
     resize_keyboard=True
@@ -24,7 +31,7 @@ kb_catalog = ReplyKeyboardMarkup(
             KeyboardButton(text='Ваше замовлення')
         ],
         [
-            KeyboardButton(text='<- Повернутися')
+            KeyboardButton(text='✖️ Вихід')
         ]
     ],
     resize_keyboard=True

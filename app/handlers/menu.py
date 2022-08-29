@@ -1,5 +1,6 @@
 from typing import Union
 from aiogram import types, Dispatcher
+from aiogram.dispatcher.filters import Text
 from app.keyboards.inline import categories_keyboard, products_keyboard, product_keyboard, menu_cd
 from app.handlers import start
 from app.keyboards import reply
@@ -15,13 +16,11 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], **
         await message.answer('Дивись, що у нас є', reply_markup=markup)
         CURRENT_ID['chat_id'] = message.chat.id
         CURRENT_ID['message_id'] = message.message_id + 2
-        print(f'list_categories (message) –> {message.message_id}')
 
     elif isinstance(message, types.CallbackQuery):
 
         call = message
         await call.message.edit_reply_markup(markup)
-        print(f'list_categories (call) –> {call.message.message_id}')
         CURRENT_ID['chat_id'] = call.message.chat.id
         CURRENT_ID['message_id'] = call.message.message_id
 
@@ -31,7 +30,6 @@ async def list_products(message: types.CallbackQuery, category, **kwargs):
     call = message
 
     await call.message.edit_reply_markup(markup)
-    print(f'list_products (call) –> {call.message.message_id}')
 
     CURRENT_ID['chat_id'] = call.message.chat.id
     CURRENT_ID['message_id'] = call.message.message_id
@@ -68,7 +66,6 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
         f"{current_product['text']}",
         reply_markup=markup)
     await call.message.edit_reply_markup()
-    print(f'show_product (call) –> {call.message.message_id}')
     CURRENT_ID['chat_id'] = call.message.chat.id
     CURRENT_ID['message_id'] = call.message.message_id + 1
 
@@ -76,11 +73,6 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
 
 
 async def command_exit(message: types.Message):
-    print(CURRENT_ID['chat_id'])
-    print(CURRENT_ID['message_id'])
-
-    # await message.delete_reply_markup()
-    # await start.user_start(message)
     chat_id = CURRENT_ID['chat_id']
     message_id = CURRENT_ID['message_id']
     await message.bot.delete_message(chat_id=chat_id, message_id=message_id)
@@ -112,6 +104,7 @@ async def navigate(call: types.CallbackQuery, callback_data: dict):
 def register_menu(dp: Dispatcher):
     dp.register_callback_query_handler(navigate,
                                        menu_cd.filter())
-    dp.register_message_handler(command_exit, text='back')
+    dp.register_message_handler(command_exit, Text(equals='✖️ Вихід',
+                                                          ignore_case=True), state='*')
 
 # ✖️ Вихід

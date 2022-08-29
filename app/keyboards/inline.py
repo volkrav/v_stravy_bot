@@ -32,12 +32,6 @@ async def categories_keyboard():
                 callback_data=callback_data
             )
         )
-    markup.row(
-        InlineKeyboardButton(
-            text='<- Назад',
-            callback_data=make_callback_data(level=CURRENT_LEVEL-1)
-        )
-    )
 
     return markup
 
@@ -65,7 +59,7 @@ async def products_keyboard(category):
 
     markup.row(
         InlineKeyboardButton(
-            text='<- Назад',
+            text='↩️ Назад',
             callback_data=make_callback_data(level=CURRENT_LEVEL-1)
         )
     )
@@ -90,7 +84,7 @@ async def product_keyboard(title, uid, price, category):
 
     markup.row(
         InlineKeyboardButton(
-            text='<- Назад',
+            text='↩️ Назад',
             callback_data=make_callback_data(
                 level=CURRENT_LEVEL-1, category=category)
         )
