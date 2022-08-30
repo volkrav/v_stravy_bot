@@ -5,6 +5,7 @@ from app.keyboards.inline import categories_keyboard, products_keyboard, product
 from app.handlers import start
 from app.keyboards import reply
 from app.models import db_api
+from app.services import utils
 
 CURRENT_ID = {}
 
@@ -14,15 +15,21 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], **
     markup = await categories_keyboard()
     if isinstance(message, types.Message):
         msg = await message.answer('Дивись, що у нас є', reply_markup=markup)
-        CURRENT_ID['chat_id'] = message.chat.id
-        CURRENT_ID['message_id'] = msg['message_id']
+        await utils.write_id_for_del_msg(message.from_user.id,
+                                         message.chat.id,
+                                         msg['message_id']
+                                         )
+        # CURRENT_ID['chat_id'] = message.chat.id
+        # CURRENT_ID['message_id'] = msg['message_id']
 
     elif isinstance(message, types.CallbackQuery):
 
         call = message
         await call.message.edit_reply_markup(markup)
-        CURRENT_ID['chat_id'] = call.message.chat.id
-        CURRENT_ID['message_id'] = call.message.message_id
+        # await utils.write_id_for_del_msg(message.from_user.id,
+        #                                  message.chat.id,
+        #                                  msg['message_id']
+        #                                  )
 
 
 async def list_products(message: types.CallbackQuery, category, **kwargs):
@@ -31,8 +38,8 @@ async def list_products(message: types.CallbackQuery, category, **kwargs):
 
     await call.message.edit_reply_markup(markup)
 
-    CURRENT_ID['chat_id'] = call.message.chat.id
-    CURRENT_ID['message_id'] = call.message.message_id
+    # CURRENT_ID['chat_id'] = call.message.chat.id
+    # CURRENT_ID['message_id'] = call.message.message_id
 
 
 async def show_product(message: types.CallbackQuery, category, product, **kwargs):
@@ -58,7 +65,7 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
         category
     )
 
-    await call.bot.send_photo(
+    msg = await call.bot.send_photo(
         call.from_user.id,
         current_product['url'],
         f"<b>{current_product['title']}</b>\n\n"
@@ -66,16 +73,19 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
         f"{current_product['text']}",
         reply_markup=markup)
     await call.message.edit_reply_markup()
-    CURRENT_ID['chat_id'] = call.message.chat.id
-    CURRENT_ID['message_id'] = call.message.message_id + 1
+
+    await utils.write_id_for_del_msg(call.from_user.id,
+                                     call.message.chat.id,
+                                     msg['message_id']
+                                     )
 
     # await call.message.answer()
 
 
 async def command_exit(message: types.Message):
-    chat_id = CURRENT_ID['chat_id']
-    message_id = CURRENT_ID['message_id']
-    await message.bot.delete_message(chat_id=chat_id, message_id=message_id)
+    # chat_id = CURRENT_ID['chat_id']
+    # message_id = CURRENT_ID['message_id']
+    await utils.delete_inline_keyboard(message.bot, message.from_user.id)
     await start.user_start(message)
 
 
