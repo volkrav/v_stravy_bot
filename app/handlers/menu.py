@@ -13,9 +13,9 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], **
 
     markup = await categories_keyboard()
     if isinstance(message, types.Message):
-        await message.answer('Дивись, що у нас є', reply_markup=markup)
+        msg = await message.answer('Дивись, що у нас є', reply_markup=markup)
         CURRENT_ID['chat_id'] = message.chat.id
-        CURRENT_ID['message_id'] = message.message_id + 2
+        CURRENT_ID['message_id'] = msg['message_id']
 
     elif isinstance(message, types.CallbackQuery):
 
