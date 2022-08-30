@@ -26,6 +26,7 @@ async def load_products(columns: List[str]) -> List[Dict]:
     return await fetchall('products',
                           columns)
 
+
 async def load_product(uid: str, columns: List[str]) -> Dict:
     columns_joined = ', '.join(columns)
     async with UseDataBase() as cursor:
