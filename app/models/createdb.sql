@@ -32,5 +32,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS cart (
     user_id INTEGER NOT NULL,
-    product_uid INTEGER NOT NULL
+    product_uid INTEGER NOT NULL,
+    quantity INTEGER DEFAULT 0
 );

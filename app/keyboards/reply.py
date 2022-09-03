@@ -38,6 +38,7 @@ kb_catalog = ReplyKeyboardMarkup(
 )
 
 '''************************ Кількість товару при додаванні до корзини ************************'''
+
 kb_quantity = ReplyKeyboardMarkup(
     keyboard=[
         [
@@ -49,7 +50,7 @@ kb_quantity = ReplyKeyboardMarkup(
             KeyboardButton(text='4'),
         ],
         [
-            KeyboardButton(text='✖️ Вихід')
+            KeyboardButton(text='Передумав')
         ]
     ],
     resize_keyboard=True

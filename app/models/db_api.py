@@ -62,8 +62,7 @@ async def delete_from_where(table: str, definitions: Dict):
             f'WHERE {definition_joined}'
         )
 
-    pass
-
+    
 
 async def load_all_categories() -> List[Dict]:
     return await fetchall('categories', ['partuid', 'name', 'alias'])
