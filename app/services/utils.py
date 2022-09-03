@@ -5,15 +5,17 @@ from app.models import db_api
 
 async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
     current_messages_for_del = await db_api.select_where_and('menu_keybords',
-    [
-        'user_id',
-        'chat_id',
-        'message_id'
-    ],
-    {
-        'user_id': user_id
-    }
-    )
+                                                             [
+                                                                 'user_id',
+                                                                 'chat_id',
+                                                                 'message_id'
+                                                             ],
+                                                             {
+                                                                 'user_id': user_id
+                                                             })
+
+    await db_api.delete_from_where('menu_keybords', {'user_id': user_id})
+
     for current_message in current_messages_for_del:
         try:
             await bot.delete_message(
@@ -21,7 +23,8 @@ async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
                 message_id=current_message['message_id']
             )
         except MessageToDeleteNotFound:
-            print(f'Повідомлення {current_message["message_id"]} вже було видалено')
+            print(
+                f'Повідомлення {current_message["message_id"]} вже було видалено')
 
 
 async def write_id_for_del_msg(user_id: int, chat_id: int, message_id: int) -> None:

@@ -53,6 +53,18 @@ async def select_where_and(table: str, columns: List[str], definitions: Dict) ->
     return result
 
 
+async def delete_from_where(table: str, definitions: Dict):
+    definition_joined = ' AND '.join([f'{field}={value}' for field, value in definitions.items()])
+    async with UseDataBase() as cursor:
+        cursor.execute(
+            f'DELETE '
+            f'FROM {table} '
+            f'WHERE {definition_joined}'
+        )
+
+    pass
+
+
 async def load_all_categories() -> List[Dict]:
     return await fetchall('categories', ['partuid', 'name', 'alias'])
 
