@@ -61,7 +61,8 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
     msg = await call.bot.send_photo(
         call.from_user.id,
         current_product['url'],
-        f"<b>{current_product['title']}</b>\n\n"
+        f"<b>{current_product['title']}.</b>\n\n"
+        f"Ціна: {current_product['price']} грн.\n\n"
         f"{current_product['descr']}\n\n"
         f"{current_product['text']}",
         reply_markup=markup)

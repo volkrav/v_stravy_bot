@@ -70,24 +70,24 @@ async def products_keyboard(category):
 async def product_keyboard(title, uid, price, category):
     CURRENT_LEVEL = 3
 
-    markup = InlineKeyboardMarkup()
+    markup = InlineKeyboardMarkup(row_width=2)
 
-    button_text = f'{title} – {price} грн.'
+    button_text = f'Додати до 🛒'
     callback_data = uid
-
-    markup.add(
-        InlineKeyboardButton(
-            text=button_text,
-            callback_data=callback_data
-        )
-    )
 
     markup.row(
         InlineKeyboardButton(
             text='↩️ Назад',
             callback_data=make_callback_data(
                 level=CURRENT_LEVEL-1, category=category)
-        )
+        ),
+        InlineKeyboardButton(
+            text=button_text,
+            callback_data=callback_data
+        ),
     )
 
     return markup
+
+'''************************ Buy ************************'''
+# 🛒 Кошик
