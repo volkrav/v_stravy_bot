@@ -28,7 +28,7 @@ async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
 
 
 async def write_id_for_del_msg(user_id: int, chat_id: int, message_id: int) -> None:
-
+    """Збереження в БД даних повідомлення для його подальшого видалення"""
     await db_api.insert('menu_keybords', {
         'user_id': user_id,
         'chat_id': chat_id,

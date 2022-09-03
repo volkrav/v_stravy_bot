@@ -23,3 +23,14 @@ CREATE TABLE IF NOT EXISTS menu_keybords (
     chat_id INTEGER,
     message_id INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER UNIQUE NOT NULL,
+    name TEXT
+);
+
+CREATE TABLE IF NOT EXISTS cart (
+    user_id INTEGER NOT NULL,
+    product_uid INTEGER NOT NULL
+);
