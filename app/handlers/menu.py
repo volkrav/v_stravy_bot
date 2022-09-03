@@ -7,8 +7,6 @@ from app.keyboards import reply
 from app.models import db_api
 from app.services import utils
 
-CURRENT_ID = {}
-
 
 async def list_categories(message: Union[types.Message, types.CallbackQuery], **kwargs):
 
@@ -19,8 +17,6 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], **
                                          message.chat.id,
                                          msg['message_id']
                                          )
-        # CURRENT_ID['chat_id'] = message.chat.id
-        # CURRENT_ID['message_id'] = msg['message_id']
 
     elif isinstance(message, types.CallbackQuery):
 
@@ -37,9 +33,6 @@ async def list_products(message: types.CallbackQuery, category, **kwargs):
     call = message
 
     await call.message.edit_reply_markup(markup)
-
-    # CURRENT_ID['chat_id'] = call.message.chat.id
-    # CURRENT_ID['message_id'] = call.message.message_id
 
 
 async def show_product(message: types.CallbackQuery, category, product, **kwargs):
@@ -83,8 +76,6 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
 
 
 async def command_exit(message: types.Message):
-    # chat_id = CURRENT_ID['chat_id']
-    # message_id = CURRENT_ID['message_id']
     await utils.delete_inline_keyboard(message.bot, message.from_user.id)
     await start.user_start(message)
 
