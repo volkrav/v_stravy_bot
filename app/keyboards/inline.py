@@ -73,7 +73,7 @@ async def product_keyboard(title, uid, price, category):
     markup = InlineKeyboardMarkup(row_width=2)
 
     button_text = f'Додати до 🛒'
-    callback_data = uid
+    callback_data = f'buy:{category}:{uid}'
 
     markup.row(
         InlineKeyboardButton(
@@ -84,7 +84,7 @@ async def product_keyboard(title, uid, price, category):
         InlineKeyboardButton(
             text=button_text,
             callback_data=callback_data
-        ),
+        )
     )
 
     return markup

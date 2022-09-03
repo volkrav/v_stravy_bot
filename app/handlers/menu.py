@@ -28,11 +28,19 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], **
         #                                  )
 
 
-async def list_products(message: types.CallbackQuery, category, **kwargs):
+async def list_products(message: Union[types.Message, types.CallbackQuery], category, **kwargs):
     markup = await products_keyboard(category)
-    call = message
+    if isinstance(message, types.Message):
+        msg = await message.answer(text='Вибираємо далі ⤵️', reply_markup=markup)
+        await utils.write_id_for_del_msg(message.from_user.id,
+                                         message.chat.id,
+                                         msg['message_id']
+                                         )
 
-    await call.message.edit_reply_markup(markup)
+    elif isinstance(message, types.CallbackQuery):
+        call = message
+
+        await call.message.edit_reply_markup(markup)
 
 
 async def show_product(message: types.CallbackQuery, category, product, **kwargs):
@@ -46,8 +54,7 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
             'descr',
             'text',
             'price'
-        ]
-    )
+        ])
 
     call = message
 
@@ -58,22 +65,21 @@ async def show_product(message: types.CallbackQuery, category, product, **kwargs
         category
     )
 
-    msg = await call.bot.send_photo(
+    msg_photo = await call.bot.send_photo(
         call.from_user.id,
         current_product['url'],
         f"<b>{current_product['title']}.</b>\n\n"
         f"Ціна: {current_product['price']} грн.\n\n"
         f"{current_product['descr']}\n\n"
-        f"{current_product['text']}",
+        f"{current_product['text']}\n"
+        f"Додайте обраний товар до кошика ⤵️",
         reply_markup=markup)
     await call.message.edit_reply_markup()
 
     await utils.write_id_for_del_msg(call.from_user.id,
                                      call.message.chat.id,
-                                     msg['message_id']
+                                     msg_photo['message_id']
                                      )
-
-    # await call.message.answer()
 
 
 async def command_exit(message: types.Message):
