@@ -55,3 +55,19 @@ kb_quantity = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
+
+'''************************ Меню перегляду замовлення ************************'''
+
+kb_menu_view_order = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text='🚀 Оформити'),
+            KeyboardButton(text='✏️ Змінити'),
+        ],
+        [
+            KeyboardButton(text='🧹 Очистити'),
+            KeyboardButton(text='↩️ До каталогу'),
+        ],
+    ],
+    resize_keyboard=True
+)
