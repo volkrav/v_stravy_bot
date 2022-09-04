@@ -34,3 +34,7 @@ async def write_id_for_del_msg(user_id: int, chat_id: int, message_id: int) -> N
         'chat_id': chat_id,
         'message_id': message_id
     })
+
+
+async def create_product_list(current_order: dict):
+    pass

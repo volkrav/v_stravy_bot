@@ -12,46 +12,51 @@ my_cart = {}
 
 
 class Buy(StatesGroup):
-    add_quantity = State()
     free_state = State()
+    add_quantity = State()
 
 
 async def create_order(message: types.CallbackQuery, state: FSMContext):
     call = message
+    product_uid = call.data.split(':')[-1]
+
     await utils.delete_inline_keyboard(message.bot, message.from_user.id)
 
     await Buy.add_quantity.set()
-    my_cart['user_id'] = call.from_user.id
-    my_cart['product_uid'] = call.data.split(':')[-1]
-    my_cart['partuid'] = call.data.split(':')[1]
-
     async with state.proxy() as data:
+        data.setdefault('order', {})
+        data['order'][product_uid] = 0
+        data['current_uid'] = product_uid
         data['partuid'] = call.data.split(':')[1]
-        print(f'with state.proxy - {data["partuid"]}')
+        current_title = data["current_title"]
+        print(data)
 
-    await call.message.answer(f'Ви обрали {my_cart["product_uid"]}\n\n')
+    await call.message.answer(f'Ви обрали <b>{current_title}</b>')
     await call.message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
                               reply_markup=reply.kb_quantity)
 
 
 async def do_not_add_product(message: types.Message, state: FSMContext):
-    await message.answer('Добре 😇')
-    data = await state.get_data()
-    category = data['partuid']
-    print(f'do_not_add_product - {category}')
+    await message.answer('Добре 😇', reply_markup=reply.kb_catalog)
     await Buy.free_state.set()
+    async with state.proxy() as data:
+        del data['order'][data['current_uid']]
+        category = data['partuid']
     # await state.finish()
-    await list_products(message, category)
+    await list_products(message, category, state=state)
 
 
 async def add_quantity_to_order(message: types.Message, state: FSMContext):
 
     try:
-        my_cart['quantity'] = int(message.text)
-        await message.answer(f'Додано: {my_cart}', reply_markup=reply.kb_catalog)
+        async with state.proxy() as data:
+            current_uid = data['current_uid']
+            data['order'][current_uid] = int(message.text)
+            await message.answer(f'Додав до кошика:\n\n <b>{data["current_title"]}</b>',
+                                 reply_markup=reply.kb_catalog)
         # await state.finish()
-        await Buy.free_state.set()
-        await list_products(message, my_cart['partuid'])
+            await Buy.free_state.set()
+            await list_products(message, data['partuid'], state=state)
     except ValueError:
         await message.answer(f'Кількість повинна бути числом, а ви вказали {message.text}.\n'
                              f'Потрібно прибрати зайві символи та пробіли.')

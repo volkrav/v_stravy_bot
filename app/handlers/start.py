@@ -42,17 +42,16 @@ async def command_location(message: types.Message):
                          'Гриль-бар "Мисливці"')
 
 
-async def command_menu(message: types.Message):
+async def command_menu(message: types.Message, state: FSMContext):
     await message.bot.send_message(message.from_user.id,
                                    'Меню',
                                    reply_markup=reply.kb_catalog)
-    await list_categories(message)
+    await list_categories(message, state)
 
 async def show_data(message: types.Message, state: FSMContext):
     await message.answer('Я show_data\n')
     async with state.proxy() as data:
-        for k, v in data.items():
-            await message.answer(f'{k}: {v}\n')
+        if data: await message.answer(data)
 
 
 # async def command_show_item(call: types.CallbackQuery, callback_data: dict):

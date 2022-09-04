@@ -15,7 +15,7 @@ def make_callback_data(level, category='0', product='0', msg_id='0'):
 
 
 async def categories_keyboard():
-    CURRENT_LEVEL = 1
+    CURRENT_LEVEL = 0
 
     categories = await db_api.load_all_categories()
 
@@ -37,7 +37,7 @@ async def categories_keyboard():
 
 
 async def products_keyboard(category):
-    CURRENT_LEVEL = 2
+    CURRENT_LEVEL = 1
 
     products = await db_api.load_products(['uid', 'title', 'partuids'])
 
@@ -68,7 +68,7 @@ async def products_keyboard(category):
 
 
 async def product_keyboard(title, uid, price, category):
-    CURRENT_LEVEL = 3
+    CURRENT_LEVEL = 2
 
     markup = InlineKeyboardMarkup(row_width=2)
 

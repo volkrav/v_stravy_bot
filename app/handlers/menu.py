@@ -1,5 +1,7 @@
 from typing import Union
 from aiogram import types, Dispatcher
+from aiogram.dispatcher import FSMContext
+
 from aiogram.dispatcher.filters import Text
 from app.keyboards.inline import categories_keyboard, products_keyboard, product_keyboard, menu_cd
 from app.handlers import start
@@ -8,7 +10,7 @@ from app.models import db_api
 from app.services import utils
 
 
-async def list_categories(message: Union[types.Message, types.CallbackQuery], **kwargs):
+async def list_categories(message: Union[types.Message, types.CallbackQuery], state: FSMContext, **kwargs):
 
     markup = await categories_keyboard()
     if isinstance(message, types.Message):
@@ -28,7 +30,7 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], **
         #                                  )
 
 
-async def list_products(message: Union[types.Message, types.CallbackQuery], category, **kwargs):
+async def list_products(message: Union[types.Message, types.CallbackQuery], category, state: FSMContext, **kwargs):
     markup = await products_keyboard(category)
     if isinstance(message, types.Message):
         msg = await message.answer(text='Вибираємо далі ⤵️', reply_markup=markup)
@@ -43,31 +45,34 @@ async def list_products(message: Union[types.Message, types.CallbackQuery], cate
         await call.message.edit_reply_markup(markup)
 
 
-async def show_product(message: types.CallbackQuery, category, product, **kwargs):
+async def show_product(message: types.CallbackQuery, category, product, state: FSMContext, **kwargs):
 
     current_product = await db_api.load_product(
         product,
         [
             'uid',
             'title',
-            'url',
+            'gallery',
             'descr',
             'text',
             'price'
         ])
 
     call = message
-
+    async with state.proxy() as data:
+        data['current_title'] = current_product['title']
     markup = await product_keyboard(
         current_product['title'],
         current_product['uid'],
         current_product['price'],
         category
     )
-
-    msg_photo = await call.bot.send_photo(
+    album = types.MediaGroup()
+    for img in current_product['gallery'].split(','):
+        album.attach_photo(img)
+    await call.message.answer_media_group(album)
+    msg_photo = await call.bot.send_message(
         call.from_user.id,
-        current_product['url'],
         f"<b>{current_product['title']}.</b>\n\n"
         f"Ціна: {current_product['price']} грн.\n\n"
         f"{current_product['descr']}\n\n"
@@ -87,26 +92,20 @@ async def command_exit(message: types.Message):
     await start.user_start(message)
 
 
-async def del_markup(call: types.CallbackQuery, **kwargs):
-    await call.message.edit_reply_markup()
-    print(f'del_markup (call) –> {call.message.message_id}')
-
-
-async def navigate(call: types.CallbackQuery, callback_data: dict):
+async def navigate(call: types.CallbackQuery, state: FSMContext, callback_data: dict):
     current_level = callback_data.get('level')
     category = callback_data.get('category')
     product = callback_data.get('product')
 
     levels = {
-        '0': del_markup,
-        '1': list_categories,
-        '2': list_products,
-        '3': show_product
+        '0': list_categories,
+        '1': list_products,
+        '2': show_product
     }
 
     current_level_function = levels.get(current_level)
 
-    await current_level_function(call, category=category, product=product)
+    await current_level_function(call, state=state, category=category, product=product)
 
 
 def register_menu(dp: Dispatcher):
