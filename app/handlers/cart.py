@@ -13,6 +13,7 @@ my_cart = {}
 
 class Buy(StatesGroup):
     add_quantity = State()
+    free_state = State()
 
 
 async def create_order(message: types.CallbackQuery, state: FSMContext):
@@ -38,7 +39,8 @@ async def do_not_add_product(message: types.Message, state: FSMContext):
     data = await state.get_data()
     category = data['partuid']
     print(f'do_not_add_product - {category}')
-    await state.finish()
+    await Buy.free_state.set()
+    # await state.finish()
     await list_products(message, category)
 
 
@@ -46,8 +48,9 @@ async def add_quantity_to_order(message: types.Message, state: FSMContext):
 
     try:
         my_cart['quantity'] = int(message.text)
-        await message.answer(my_cart)
-        await state.finish()
+        await message.answer(f'Додано: {my_cart}', reply_markup=reply.kb_catalog)
+        # await state.finish()
+        await Buy.free_state.set()
         await list_products(message, my_cart['partuid'])
     except ValueError:
         await message.answer(f'Кількість повинна бути числом, а ви вказали {message.text}.\n'

@@ -1,6 +1,8 @@
 from unicodedata import category
 from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import CommandStart, Text
+from aiogram.dispatcher import FSMContext
+
 
 from app.config import Config
 from app.handlers.menu import list_categories
@@ -46,6 +48,12 @@ async def command_menu(message: types.Message):
                                    reply_markup=reply.kb_catalog)
     await list_categories(message)
 
+async def show_data(message: types.Message, state: FSMContext):
+    await message.answer('Я show_data\n')
+    async with state.proxy() as data:
+        for k, v in data.items():
+            await message.answer(f'{k}: {v}\n')
+
 
 # async def command_show_item(call: types.CallbackQuery, callback_data: dict):
 #     await list_products(call, callback_data['category'])
@@ -53,13 +61,14 @@ async def command_menu(message: types.Message):
 
 def register_user(dp: Dispatcher):
     dp.register_message_handler(user_start, Text(equals=['start', 'замовити'],
-                                                 ignore_case=True))
-    dp.register_message_handler(user_start, CommandStart())
+                                                 ignore_case=True), state='*')
+    dp.register_message_handler(user_start, CommandStart(), state='*')
     dp.register_message_handler(command_delivery, Text(equals='🚚 Доставка і оплата',
-                                                       ignore_case=True))
+                                                       ignore_case=True), state='*')
     dp.register_message_handler(command_location, Text(equals='Розташування',
-                                                       ignore_case=True))
+                                                       ignore_case=True), state='*')
     dp.register_message_handler(command_menu, Text(equals='Меню',
-                                                   ignore_case=True))
+                                                   ignore_case=True), state='*')
+    dp.register_message_handler(show_data, Text(equals='Показати', ignore_case=True), state='*')
     # dp.register_callback_query_handler(
     #     command_show_item, inline.menu_cd.filter())

@@ -111,7 +111,7 @@ async def navigate(call: types.CallbackQuery, callback_data: dict):
 
 def register_menu(dp: Dispatcher):
     dp.register_callback_query_handler(navigate,
-                                       menu_cd.filter())
+                                       menu_cd.filter(), state='*')
     dp.register_message_handler(command_exit, Text(equals='✖️ Вихід',
                                                           ignore_case=True), state='*')
 
