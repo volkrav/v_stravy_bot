@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 from app.models.DBcm import UseDataBase
 
 
@@ -78,8 +78,11 @@ async def load_products(columns: List[str]) -> List[Dict]:
                           columns)
 
 
-async def load_product(uid: str, columns: List[str]) -> Dict:
-    columns_joined = ', '.join(columns)
+async def load_product(uid: str, columns: Union[str, List[str]]) -> Dict:
+    if isinstance(columns, str):
+        columns_joined = columns
+    elif isinstance(columns, List):
+        columns_joined = ', '.join(columns)
     async with UseDataBase() as cursor:
         cursor.execute(
             f'SELECT {columns_joined} '

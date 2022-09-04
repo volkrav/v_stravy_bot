@@ -1,6 +1,20 @@
 from aiogram import types, Bot
 from aiogram.utils.exceptions import MessageToDeleteNotFound
+from typing import NamedTuple
 from app.models import db_api
+
+
+class Product(NamedTuple):
+    uid: str
+    title: str
+    price: int
+    descr: str
+    text: str
+    img: str
+    quantity: str
+    gallery: str
+    url: str
+    partuids: str
 
 
 async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
@@ -36,5 +50,36 @@ async def write_id_for_del_msg(user_id: int, chat_id: int, message_id: int) -> N
     })
 
 
-async def create_product_list(current_order: dict):
-    pass
+async def create_product_list(current_order_uid: list) -> list[Product]:
+    product_list = []
+    for uid in current_order_uid:
+        product_list.append(
+            await create_product(uid)
+        )
+    return product_list
+
+
+async def create_product(uid: str) -> Product:
+    data_product = await db_api.load_product(uid, ['uid',
+                                                   'title',
+                                                   'price',
+                                                   'descr',
+                                                   'text',
+                                                   'img',
+                                                   'quantity',
+                                                   'gallery',
+                                                   'url',
+                                                   'partuids'
+                                                   ])
+    return Product(
+        uid = data_product['uid'],
+        title = data_product['title'],
+        price = data_product['price'],
+        descr = data_product['descr'],
+        text = data_product['text'],
+        img = data_product['img'],
+        quantity = data_product['quantity'],
+        gallery = data_product['gallery'],
+        url = data_product['url'],
+        partuids = data_product['partuids']
+    )

@@ -18,9 +18,16 @@ async def command_view_order(message: types.Message, state: FSMContext):
                 f'- Редагувати\n'
                 f'- Скасувати\n\n'
             )
-            product_list = await utils.create_product_list(current_order)
-            for k, v in current_order.items():
-                answer += f'{k} = {v}\n'
+            product_list = await utils.create_product_list(current_order.keys())
+            amount_payable = 0
+            for index, product in enumerate(product_list, 1):
+                amount_payable += current_order[product.uid] * product.price
+                answer += (f'# {index} \n'
+                           f'{current_order[product.uid]} шт. * {product.title}\n'
+                           f'Ціна: {product.price} грн.\n'
+                           f'Всього: {current_order[product.uid] * product.price} грн.\n\n'
+                           )
+            answer += f'Сумма до сплати: {amount_payable} грн.'
             await message.reply(text=answer)
         else:
             answer = 'Кошик ще порожній, спершу оберіть товар'

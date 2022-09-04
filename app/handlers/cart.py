@@ -29,7 +29,7 @@ async def create_order(message: types.CallbackQuery, state: FSMContext):
         data['current_uid'] = product_uid
         data['partuid'] = call.data.split(':')[1]
         current_title = data["current_title"]
-        print(data)
+        print(f'create_order -> {data}')
 
     await call.message.answer(f'Ви обрали <b>{current_title}</b>')
     await call.message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
@@ -52,7 +52,8 @@ async def add_quantity_to_order(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             current_uid = data['current_uid']
             data['order'][current_uid] = int(message.text)
-            await message.answer(f'Додав до кошика:\n\n <b>{data["current_title"]}</b>',
+            await message.answer(f'Додав до кошика:\n\n <b>{data["order"][current_uid]} шт. * '
+                                 f'{data["current_title"]}</b>',
                                  reply_markup=reply.kb_catalog)
         # await state.finish()
             await Buy.free_state.set()
