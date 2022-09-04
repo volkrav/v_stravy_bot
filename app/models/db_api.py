@@ -36,12 +36,15 @@ async def fetchall(table: str, columns: List[str]) -> List[Tuple]:
 
 async def select_where_and(table: str, columns: List[str], definitions: Dict) -> List[Tuple]:
     columns_joined = ', '.join(columns)
-    definition_joined = ' AND '.join([f'{field}={value}' for field, value in definitions.items()])
+    definition_joined_placeholders = ' AND '.join([f'{field}=?' for field in definitions.keys()])
+    values = tuple(definitions.values())
+
     async with UseDataBase() as cursor:
         cursor.execute(
             f'SELECT {columns_joined} '
             f'FROM {table} '
-            f'WHERE {definition_joined}'
+            f'WHERE {definition_joined_placeholders}',
+            values
         )
         rows = cursor.fetchall()
     result = []
@@ -54,15 +57,17 @@ async def select_where_and(table: str, columns: List[str], definitions: Dict) ->
 
 
 async def delete_from_where(table: str, definitions: Dict):
-    definition_joined = ' AND '.join([f'{field}={value}' for field, value in definitions.items()])
+    definition_joined_placeholders = ' AND '.join([f'{field}=?' for field in definitions.keys()])
+    values = tuple(definitions.values())
     async with UseDataBase() as cursor:
         cursor.execute(
             f'DELETE '
             f'FROM {table} '
-            f'WHERE {definition_joined}'
+            f'WHERE {definition_joined_placeholders}',
+            values
         )
 
-    
+
 
 async def load_all_categories() -> List[Dict]:
     return await fetchall('categories', ['partuid', 'name', 'alias'])
@@ -79,7 +84,8 @@ async def load_product(uid: str, columns: List[str]) -> Dict:
         cursor.execute(
             f'SELECT {columns_joined} '
             f'FROM "products" '
-            f'WHERE "uid" = {uid}'
+            f'WHERE "uid" = ?',
+            (uid, )
         )
         row = cursor.fetchone()
     result = []
