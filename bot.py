@@ -35,9 +35,9 @@ def register_all_filters(dp: Dispatcher):
 def register_all_handlers(dp: Dispatcher):
     register_admin(dp)
     register_user(dp)
+    register_order(dp)
     register_menu(dp)
     register_cart(dp)
-    register_order(dp)
     register_echo(dp)
 
 

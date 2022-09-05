@@ -8,12 +8,13 @@ from app.keyboards import reply
 from app.services import utils
 from .menu import list_products
 
-my_cart = {}
-
 
 class Buy(StatesGroup):
     free_state = State()
     add_quantity = State()
+    view_order = State()
+    change_order = State()
+    change_quantity = State()
 
 
 async def create_order(message: types.CallbackQuery, state: FSMContext):
@@ -36,14 +37,6 @@ async def create_order(message: types.CallbackQuery, state: FSMContext):
                               reply_markup=reply.kb_quantity)
 
 
-async def do_not_add_product(message: types.Message, state: FSMContext):
-    await message.answer('Добре 😇', reply_markup=reply.kb_catalog)
-    await Buy.free_state.set()
-    async with state.proxy() as data:
-        del data['order'][data['current_uid']]
-        category = data['partuid']
-    # await state.finish()
-    await list_products(message, category, state=state)
 
 
 async def add_quantity_to_order(message: types.Message, state: FSMContext):
@@ -63,6 +56,16 @@ async def add_quantity_to_order(message: types.Message, state: FSMContext):
                              f'Потрібно прибрати зайві символи та пробіли.')
         await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
                              reply_markup=reply.kb_quantity)
+
+
+async def do_not_add_product(message: types.Message, state: FSMContext):
+    await message.answer('Добре 😇', reply_markup=reply.kb_catalog)
+    await Buy.free_state.set()
+    async with state.proxy() as data:
+        del data['order'][data['current_uid']]
+        category = data['partuid']
+    # await state.finish()
+    await list_products(message, category, state=state)
 
 
 def register_cart(dp: Dispatcher):
