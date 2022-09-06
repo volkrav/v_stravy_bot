@@ -108,8 +108,8 @@ async def add_new_quantity(message: types.Message, state: FSMContext):
     try:
         async with state.proxy() as data:
             current_uid = data['uid_for_change_quantity']
-        
-        await message.answer(f'{current_uid} - {int(message.text)}')
+            data['order'][current_uid] = int(message.text)
+        await message.answer(f'Кількіть змінено!')
     except ValueError:
         await message.answer(f'Кількість повинна бути числом, а ви вказали {message.text}.\n'
                              f'Потрібно прибрати зайві символи та пробіли.')
