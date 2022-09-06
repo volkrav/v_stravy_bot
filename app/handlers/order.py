@@ -67,8 +67,8 @@ async def command_change_order(message: types.Message, state: FSMContext):
             data['msg_change_order'] = msg['message_id']
         else:
             answer = 'Кошик ще порожній, спершу оберіть товар'
-            await message.answer(text=answer)
-            await command_menu(message, state=state)
+            await message.answer(answer)
+            await command_menu(message, state)
 
 
 async def command_change_quantity(message: types.Message, state: FSMContext):
@@ -81,25 +81,40 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
         except MessageToDeleteNotFound:
             print(f'повідомлення {data["msg_view_order"]} вже було видалено')
 
-        for uid in data['order'].keys():
+        for uid, quantity in data['order'].items():
             if part_of_uid in uid:
                 current_uid = uid
+                current_quantity = quantity
+                data['uid_for_change_quantity'] = current_uid
 
     product = await utils.create_product(current_uid)
     await message.bot.send_photo(
         message.from_user.id,
         photo=product.img,
-        caption=f'{product.title}',
-        reply_markup=reply.kb_quantity)
+        caption=(
+            f'<b>{product.title}</b>\n\n'
+            f'Кількість в замовленні: {current_quantity} шт.'
+        )
+    )
     try:
         await message.bot.delete_message(message.from_user.id, message['message_id'])
     except Exception as err:
         print(err)
+    await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
+                         reply_markup=reply.kb_quantity)
 
 
 async def add_new_quantity(message: types.Message, state: FSMContext):
-    await message.answer(message.text)
-
+    try:
+        async with state.proxy() as data:
+            current_uid = data['uid_for_change_quantity']
+        
+        await message.answer(f'{current_uid} - {int(message.text)}')
+    except ValueError:
+        await message.answer(f'Кількість повинна бути числом, а ви вказали {message.text}.\n'
+                             f'Потрібно прибрати зайві символи та пробіли.')
+        await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
+                             reply_markup=reply.kb_quantity)
 
 async def cancel_add_new_quantity(message: types.Message, state: FSMContext):
     await command_change_order(message, state)
