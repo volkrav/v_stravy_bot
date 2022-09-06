@@ -119,10 +119,8 @@ async def add_new_quantity(message: types.Message, state: FSMContext):
 
 async def command_del_product(message: types.Message, state: FSMContext):
 
-
     current_uid = await _get_current_uid_from_part(
         message.text.split('/del')[-1], state)
-
     try:
         await message.bot.delete_message(message.from_user.id, message['message_id'])
     except MessageToDeleteNotFound:
@@ -166,20 +164,17 @@ async def command_back_to_command_menu(message: types.Message, state: FSMContext
     await command_menu(message, state=state)
 
 
-async def _get_current_uid_from_part(part_uid: int, state: FSMContext) -> int:
+async def _get_current_uid_from_part(part_uid: int, state: FSMContext) -> str:
     async with state.proxy() as data:
         for uid in data['order'].keys():
             if part_uid in uid:
                 return uid
-            else:
-                return None
+    return None
 
 
 def register_order(dp: Dispatcher):
-    dp.register_message_handler(command_view_order,
-                                Text(equals='Ваше замовлення',
-                                     ignore_case=True),
-                                state='*')
+    dp.register_message_handler(command_view_order, Text(equals='Ваше замовлення',
+                                                         ignore_case=True), state='*')
     dp.register_message_handler(command_back_to_command_menu, Text(equals='↩️ До каталогу',
                                                                    ignore_case=True), state=Buy.view_order)
     dp.register_message_handler(command_change_order, Text(equals='✏️ Змінити',

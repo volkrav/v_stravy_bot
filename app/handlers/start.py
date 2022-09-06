@@ -13,7 +13,7 @@ from app.keyboards import reply, inline
 '''************************ СТАРТОВЕ ВІКНО ************************'''
 
 
-async def user_start(message: types.Message):
+async def user_start(message: types.Message, state: FSMContext):
     try:
         bot = message.bot
 
