@@ -73,19 +73,17 @@ async def command_change_order(message: types.Message, state: FSMContext):
 
 async def command_change_quantity(message: types.Message, state: FSMContext):
     await Buy.change_quantity.set()
-    part_of_uid = message.text.split('/change')[-1]
+    current_uid = await _get_current_uid_from_part(message.text.split('/change')[-1], state)
 
     async with state.proxy() as data:
         try:
             await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
         except MessageToDeleteNotFound:
-            print(f'повідомлення {data["msg_view_order"]} вже було видалено')
+            print(
+                f'command_change_quantity - повідомлення {data["msg_change_order"]} вже було видалено')
 
-        for uid, quantity in data['order'].items():
-            if part_of_uid in uid:
-                current_uid = uid
-                current_quantity = quantity
-                data['uid_for_change_quantity'] = current_uid
+        current_quantity = data['order'][current_uid]
+        data['uid_for_change_quantity'] = current_uid
 
     product = await utils.create_product(current_uid)
     await message.bot.send_photo(
@@ -98,8 +96,9 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
     )
     try:
         await message.bot.delete_message(message.from_user.id, message['message_id'])
-    except Exception as err:
-        print(err)
+    except MessageToDeleteNotFound:
+        print(
+            f'command_change_quantity - повідомлення {message["message_id"]} вже було видалено')
     await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
                          reply_markup=reply.kb_quantity)
 
@@ -117,6 +116,33 @@ async def add_new_quantity(message: types.Message, state: FSMContext):
         await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
                              reply_markup=reply.kb_quantity)
 
+
+async def command_del_product(message: types.Message, state: FSMContext):
+
+
+    current_uid = await _get_current_uid_from_part(
+        message.text.split('/del')[-1], state)
+
+    try:
+        await message.bot.delete_message(message.from_user.id, message['message_id'])
+    except MessageToDeleteNotFound:
+        print(
+            f'command_del_product - повідомлення {message["message_id"]} вже було видалено')
+
+    async with state.proxy() as data:
+        try:
+            await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
+        except MessageToDeleteNotFound:
+            print(
+                f'command_change_quantity - повідомлення {data["msg_change_order"]} вже було видалено')
+        try:
+            del data['order'][current_uid]
+            await message.answer('Товар видалено!')
+        except KeyError:
+            print(f'товар {current_uid} вже було видалено')
+    await command_change_order(message, state)
+
+
 async def cancel_add_new_quantity(message: types.Message, state: FSMContext):
     await command_change_order(message, state)
 
@@ -132,12 +158,21 @@ async def command_back_to_view_order(message: types.Message, state: FSMContext):
     try:
         await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
     except MessageToDeleteNotFound:
-        print(f'повідомлення {data["msg_view_order"]} вже було видалено')
+        print(f'повідомлення {data["msg_change_order"]} вже було видалено')
     await command_view_order(message, state)
 
 
 async def command_back_to_command_menu(message: types.Message, state: FSMContext):
     await command_menu(message, state=state)
+
+
+async def _get_current_uid_from_part(part_uid: int, state: FSMContext) -> int:
+    async with state.proxy() as data:
+        for uid in data['order'].keys():
+            if part_uid in uid:
+                return uid
+            else:
+                return None
 
 
 def register_order(dp: Dispatcher):
@@ -155,6 +190,8 @@ def register_order(dp: Dispatcher):
                                                                  ignore_case=True), state=Buy.change_order)
     dp.register_message_handler(command_change_quantity, Text(startswith='/change',
                                                               ignore_case=True), state=Buy.change_order)
+    dp.register_message_handler(command_del_product, Text(startswith='/del',
+                                                          ignore_case=True), state=Buy.change_order)
     dp.register_message_handler(cancel_add_new_quantity, Text(equals='Передумав',
                                                               ignore_case=True), state=Buy.change_quantity)
     dp.register_message_handler(add_new_quantity, state=Buy.change_quantity)
