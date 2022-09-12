@@ -80,7 +80,7 @@ btn_delivery = KeyboardButton(text='🚚 Доставка')
 btn_pickup = KeyboardButton(text='💪 Самовивіз')
 btn_cancel_ordering = KeyboardButton(text='❌ Скасувати')
 
-kb_pickup_or_delivery = ReplyKeyboardMarkup(resize_keyboard=True).row(
+kb_delivery_or_pickup = ReplyKeyboardMarkup(resize_keyboard=True).row(
     btn_pickup, btn_delivery).add(btn_cancel_ordering)
 
 
@@ -90,4 +90,11 @@ btn_no = KeyboardButton(text='Ні')
 
 kb_yes_or_no = ReplyKeyboardMarkup(resize_keyboard=True).row(
     btn_no, btn_yes).add(btn_cancel_ordering)
-# 💪 Самовивіз
+
+# ? Кнопка Скасувати
+kb_cancel_ordering = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_cancel_ordering)
+
+# ? Кнопка Поділитися номером телефону + Скасувати
+btn_share_contact = KeyboardButton(text='Відправити номер', request_contact=True)
+
+kb_share_contact = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_share_contact).add(btn_cancel_ordering)

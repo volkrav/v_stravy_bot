@@ -2,11 +2,11 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.utils.exceptions import MessageToDeleteNotFound
+
+from app.handlers import start
 from app.handlers.cart import Buy
 from app.keyboards import reply
 from app.services import utils
-
-from app.handlers import start
 
 
 async def command_view_order(message: types.Message, state: FSMContext):
@@ -43,6 +43,8 @@ async def command_change_order(message: types.Message, state: FSMContext):
             await message.bot.delete_message(message.from_user.id, data['msg_view_order'])
         except MessageToDeleteNotFound:
             print(f'повідомлення {data["msg_view_order"]} вже було видалено')
+        except KeyError:
+            print(f'Команда command_change_order не актуальна, data[\'msg_view_order\'] не існує')
 
         if 'order' in data and data['order'].keys():
             current_order = data['order']
