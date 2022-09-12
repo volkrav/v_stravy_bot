@@ -2,12 +2,11 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.utils.exceptions import MessageToDeleteNotFound
-from aiogram.utils.markdown import hcode
 from app.handlers.cart import Buy
 from app.keyboards import reply
 from app.services import utils
 
-from .start import command_menu
+from app.handlers import start
 
 
 async def command_view_order(message: types.Message, state: FSMContext):
@@ -33,7 +32,7 @@ async def command_view_order(message: types.Message, state: FSMContext):
         else:
             answer = 'Кошик ще порожній, спершу оберіть товар'
             await message.answer(text=answer)
-            await command_menu(message, state=state)
+            await start.command_menu(message, state=state)
 
 
 async def command_change_order(message: types.Message, state: FSMContext):
@@ -68,7 +67,7 @@ async def command_change_order(message: types.Message, state: FSMContext):
         else:
             answer = 'Кошик ще порожній, спершу оберіть товар'
             await message.answer(answer)
-            await command_menu(message, state)
+            await start.command_menu(message, state)
 
 
 async def command_change_quantity(message: types.Message, state: FSMContext):
@@ -148,7 +147,7 @@ async def cancel_add_new_quantity(message: types.Message, state: FSMContext):
 async def command_clear_order(message: types.Message, state: FSMContext):
     await message.answer('Кошик очищено.')
     await state.finish()
-    await command_menu(message, state=state)
+    await start.command_menu(message, state=state)
 
 
 async def command_back_to_view_order(message: types.Message, state: FSMContext):
@@ -161,7 +160,7 @@ async def command_back_to_view_order(message: types.Message, state: FSMContext):
 
 
 async def command_back_to_command_menu(message: types.Message, state: FSMContext):
-    await command_menu(message, state=state)
+    await start.command_menu(message, state=state)
 
 
 async def _get_current_uid_from_part(part_uid: int, state: FSMContext) -> str:

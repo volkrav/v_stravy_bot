@@ -10,11 +10,12 @@ async def bot_echo(message: types.Message, state: FSMContext):
         f'Вітаю {message.from_user.first_name}\n\n'
         f'Це Vasylevsky Stravy бот, я допомагаю '
         f'оформлювати замовлення.\n'
-        f'Схоже, я був на технічному обслуговуванні, тому пропоную розпочати з початку'
+        f'Ви ввели команду, яку я не знаю. Використайте, будь-ласка, клавіатуру '
+        f'або перезавантажте бота командою /start'
     )
     await utils.delete_inline_keyboard(message.bot, message.from_user.id)
     await message.answer(text=answer)
-    await start.user_start(message, state)
+    # await start.user_start(message, state)
 
 
 async def bot_echo_all(message: types.Message, state: FSMContext):

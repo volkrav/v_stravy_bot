@@ -8,9 +8,9 @@ from aiogram.contrib.fsm_storage.redis import RedisStorage2
 from app.config import load_config
 from app.filters.admin import AdminFilter
 from app.handlers.admin import register_admin
+from app.handlers.ordering import register_ordering
 from app.handlers.start import register_user
 from app.handlers.menu import register_menu
-from app.handlers.ordering import register_ordering
 from app.handlers.cart import register_cart
 from app.handlers.order import register_order
 from app.handlers.echo import register_echo
@@ -35,9 +35,9 @@ def register_all_filters(dp: Dispatcher):
 
 def register_all_handlers(dp: Dispatcher):
     register_admin(dp)
-    register_user(dp)
-    register_order(dp)
     register_ordering(dp)
+    register_order(dp)
+    register_user(dp)
     register_menu(dp)
     register_cart(dp)
     register_echo(dp)

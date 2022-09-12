@@ -74,13 +74,20 @@ kb_menu_view_order = ReplyKeyboardMarkup(
 
 '''************************ Меню оформлення замовлення ************************'''
 
+# ? Вибір – доставка чи самовивіз
+
 btn_delivery = KeyboardButton(text='🚚 Доставка')
 btn_pickup = KeyboardButton(text='💪 Самовивіз')
-btn_cancel_ordering = KeyboardButton(text='❌ Відміна')
+btn_cancel_ordering = KeyboardButton(text='❌ Скасувати')
 
-kb_ordering = ReplyKeyboardMarkup(resize_keyboard=True).row(
+kb_pickup_or_delivery = ReplyKeyboardMarkup(resize_keyboard=True).row(
     btn_pickup, btn_delivery).add(btn_cancel_ordering)
 
 
+# ? Вибір так чи ні
+btn_yes = KeyboardButton(text='Так')
+btn_no = KeyboardButton(text='Ні')
 
+kb_yes_or_no = ReplyKeyboardMarkup(resize_keyboard=True).row(
+    btn_no, btn_yes).add(btn_cancel_ordering)
 # 💪 Самовивіз
