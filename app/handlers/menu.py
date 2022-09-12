@@ -87,9 +87,9 @@ async def show_product(message: types.CallbackQuery, category, product, state: F
                                      )
 
 
-async def command_exit(message: types.Message):
+async def command_exit(message: types.Message, state: FSMContext):
     await utils.delete_inline_keyboard(message.bot, message.from_user.id)
-    await start.user_start(message)
+    await start.user_start(message, state)
 
 
 async def navigate(call: types.CallbackQuery, state: FSMContext, callback_data: dict):

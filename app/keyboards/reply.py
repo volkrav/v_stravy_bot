@@ -71,3 +71,16 @@ kb_menu_view_order = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
+
+'''************************ Меню оформлення замовлення ************************'''
+
+btn_delivery = KeyboardButton(text='🚚 Доставка')
+btn_pickup = KeyboardButton(text='💪 Самовивіз')
+btn_cancel_ordering = KeyboardButton(text='❌ Відміна')
+
+kb_ordering = ReplyKeyboardMarkup(resize_keyboard=True).row(
+    btn_pickup, btn_delivery).add(btn_cancel_ordering)
+
+
+
+# 💪 Самовивіз

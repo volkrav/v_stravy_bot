@@ -6,7 +6,8 @@ from aiogram.dispatcher import FSMContext
 
 from app.config import Config
 from app.handlers.menu import list_categories
-from app.keyboards import reply, inline
+from app.keyboards import reply
+from app.services import utils
 
 '''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
 
@@ -14,8 +15,11 @@ from app.keyboards import reply, inline
 
 
 async def user_start(message: types.Message, state: FSMContext):
+
     try:
         bot = message.bot
+
+        await utils.delete_inline_keyboard(bot, message.from_user.id)
 
         await bot.send_message(message.from_user.id,
                                f'Смачного\n\n'
