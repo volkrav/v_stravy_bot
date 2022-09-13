@@ -16,6 +16,13 @@ class Product(NamedTuple):
     url: str
     partuids: str
 
+class Order(NamedTuple):
+    pickup: bool
+    name: str
+    phone: str
+    address: str
+
+
 
 async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
     current_messages_for_del = await db_api.select_where_and('menu_keybords',
@@ -82,4 +89,17 @@ async def create_product(uid: str) -> Product:
         gallery = data_product['gallery'],
         url = data_product['url'],
         partuids = data_product['partuids']
+    )
+
+
+async def create_order(order_details: dict) -> Order:
+    if order_details['pickup']:
+        _address = 'Самовивіз. Знижка -10%'
+    else:
+        _address = order_details['addres']
+    return Order(
+        pickup = order_details['pickup'],
+        name = order_details['name'],
+        phone = order_details['phone'],
+        address = _address
     )

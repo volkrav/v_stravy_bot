@@ -44,7 +44,7 @@ async def command_change_order(message: types.Message, state: FSMContext):
         except MessageToDeleteNotFound:
             print(f'повідомлення {data["msg_view_order"]} вже було видалено')
         except KeyError:
-            print(f'Команда command_change_order не актуальна, data[\'msg_view_order\'] не існує')
+            print(f'command_change_order Команда не актуальна, data[\'msg_view_order\'] не існує')
 
         if 'order' in data and data['order'].keys():
             current_order = data['order']
@@ -82,6 +82,8 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
         except MessageToDeleteNotFound:
             print(
                 f'command_change_quantity - повідомлення {data["msg_change_order"]} вже було видалено')
+        except KeyError:
+            print(f'command_change_quantity Команда не актуальна, data[\'msg_view_order\'] не існує')
 
         current_quantity = data['order'][current_uid]
         data['uid_for_change_quantity'] = current_uid
@@ -100,6 +102,9 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
     except MessageToDeleteNotFound:
         print(
             f'command_change_quantity - повідомлення {message["message_id"]} вже було видалено')
+    except KeyError:
+        print(f'command_change_quantity Команда не актуальна, data[\'msg_view_order\'] не існує')
+
     await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
                          reply_markup=reply.kb_quantity)
 
@@ -127,6 +132,8 @@ async def command_del_product(message: types.Message, state: FSMContext):
     except MessageToDeleteNotFound:
         print(
             f'command_del_product - повідомлення {message["message_id"]} вже було видалено')
+    except KeyError:
+        print(f'command_del_product Команда не актуальна, data[\'msg_view_order\'] не існує')
 
     async with state.proxy() as data:
         try:
@@ -134,6 +141,9 @@ async def command_del_product(message: types.Message, state: FSMContext):
         except MessageToDeleteNotFound:
             print(
                 f'command_change_quantity - повідомлення {data["msg_change_order"]} вже було видалено')
+        except KeyError:
+            print(f'command_del_product Команда не актуальна, data[\'msg_view_order\'] не існує')
+
         try:
             del data['order'][current_uid]
             await message.answer('Товар видалено!')
@@ -158,6 +168,9 @@ async def command_back_to_view_order(message: types.Message, state: FSMContext):
         await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
     except MessageToDeleteNotFound:
         print(f'повідомлення {data["msg_change_order"]} вже було видалено')
+    except KeyError:
+        print(f'command_back_to_view_order Команда не актуальна, data[\'msg_view_order\'] не існує')
+
     await command_view_order(message, state)
 
 
