@@ -23,6 +23,11 @@ class Order(NamedTuple):
     address: str
 
 
+class ViewOrder(NamedTuple):
+    text: str
+    amount: int
+
+
 
 async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
     current_messages_for_del = await db_api.select_where_and('menu_keybords',

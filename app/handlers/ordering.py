@@ -1,16 +1,14 @@
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils.exceptions import MessageToDeleteNotFound
-from aiogram.dispatcher.filters.state import StatesGroup, State
 
-from app.keyboards import reply
-
-from app.handlers import order
-from app.handlers import start
-from app.handlers import echo
-from app.services import utils
+from app.handlers import echo, order, start
 from app.handlers.cart import Buy
+from app.keyboards import reply
+from app.misc import view
+from app.services import utils
 
 
 class Ordering(StatesGroup):
@@ -48,7 +46,7 @@ async def command_pickup(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['ordering']['pickup'] = True
     await message.answer(text='Введіть, будь ласка, Ваше ім\'я: ⌨️⤵️',
-                            reply_markup=reply.kb_cancel_ordering)
+                         reply_markup=reply.kb_cancel_ordering)
     await Ordering.get_name.set()
 
 
@@ -69,28 +67,23 @@ async def command_get_phone(message: types.Message, state: FSMContext):
 
 async def _create_order_list(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        current_order = data['order']
-        product_list = await utils.create_product_list(current_order.keys())
-        answer = '***** Ваше замовлення: *****\n\n'
-        amount_payable = 0
-        for index, product in enumerate(product_list, 1):
-            amount_payable += current_order[product.uid] * product.price
-            answer += (f'# {index} \n'
-                       f'<b>{current_order[product.uid]} шт. * {product.title}</b>\n'
-                       f'Ціна: {product.price} грн.\n'
-                       f'Всього: {current_order[product.uid] * product.price} грн.\n\n'
-                       f'Сумма: {amount_payable}\n\n'
-                       f'Деталі замовлення:\n'
-                       )
-        order = await utils.create_order(data['ordering'])
-        if order.pickup:
-            amount_payable = round(amount_payable * 0.9)
-        answer += (
-            f'Ваше ім\'я: {order.name}\n'
-            f'Контактний номер: {await _format_phone_number(order.phone)}\n'
-            f'Доставка: {order.address}\n\n'
-        )
-        answer += f'Сумма до сплати: {amount_payable} грн.'
+        try:
+            view_list_products = await view.list_products(data['order'])
+            answer = ('***** Ваше замовлення: *****\n\n'
+                    + view_list_products.text)
+            order = await utils.create_order(data['ordering'])
+        except KeyError:
+            print('_create_order_list - KeyError: "order"')
+            return await echo.bot_echo(message, state)
+    if order.pickup:
+        amount_payable = round(view_list_products.amount * 0.9)
+    answer += (
+        f'<b>Деталі замовлення:</b>\n'
+        f'• Ваше ім\'я: {order.name}\n'
+        f'• Контактний номер: {await _format_phone_number(order.phone)}\n'
+        f'• Доставка: {order.address}\n\n'
+    )
+    answer += f'Сумма до сплати: {amount_payable} грн.'
     await message.answer(answer)
 
 

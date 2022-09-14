@@ -7,6 +7,7 @@ from app.handlers import start
 from app.handlers.cart import Buy
 from app.keyboards import reply
 from app.services import utils
+from app.misc import view
 
 
 async def command_view_order(message: types.Message, state: FSMContext):
@@ -15,18 +16,8 @@ async def command_view_order(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
         if 'order' in data and data['order'].keys():
-            current_order = data['order']
-            product_list = await utils.create_product_list(current_order.keys())
-            answer = '***** Ваше замовлення: *****\n\n'
-            amount_payable = 0
-            for index, product in enumerate(product_list, 1):
-                amount_payable += current_order[product.uid] * product.price
-                answer += (f'# {index} \n'
-                           f'<b>{current_order[product.uid]} шт. * {product.title}</b>\n'
-                           f'Ціна: {product.price} грн.\n'
-                           f'Всього: {current_order[product.uid] * product.price} грн.\n\n'
-                           )
-            answer += f'Сумма до сплати: {amount_payable} грн.'
+            view_list_products = await view.list_products(data['order'])
+            answer = '***** Ваше замовлення: *****\n\n' + view_list_products.text
             msg = await message.answer(text=answer, reply_markup=reply.kb_menu_view_order)
             data['msg_view_order'] = msg['message_id']
         else:
