@@ -69,12 +69,12 @@ async def _create_order_list(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         try:
             view_list_products = await view.list_products(data['order'])
-            answer = ('***** Ваше замовлення: *****\n\n'
-                    + view_list_products.text)
             order = await utils.create_order(data['ordering'])
         except KeyError:
             print('_create_order_list - KeyError: "order"')
             return await echo.bot_echo(message, state)
+    answer = ('***** Ваше замовлення: *****\n\n'
+              + view_list_products.text)
     if order.pickup:
         amount_payable = round(view_list_products.amount * 0.9)
     answer += (
@@ -85,6 +85,9 @@ async def _create_order_list(message: types.Message, state: FSMContext):
     )
     answer += f'Сумма до сплати: {amount_payable} грн.'
     await message.answer(answer)
+    await message.answer("Ваше замовлення відправлено адміністратору.")
+    await send_order_to_admins(message, answer)
+    # await message
 
 
 async def command_cancel_ordering(message: types.Message, state: FSMContext):
@@ -99,6 +102,12 @@ async def _format_phone_number(phone: str) -> str:
             f'{phone[9:11]}-'
             f'{phone[11:]}'
             )
+
+
+async def send_order_to_admins(message: types.Message, answer: str):
+    config = message.bot.get('config')
+    for id_admin in config.tg_bot.admin_ids:
+        await message.bot.send_message(chat_id=message.from_user.id, text=answer)
 
 
 def register_ordering(dp: Dispatcher):
