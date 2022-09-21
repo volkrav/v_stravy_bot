@@ -11,7 +11,7 @@ from app.services import utils
 
 
 async def list_categories(message: Union[types.Message, types.CallbackQuery], state: FSMContext, **kwargs):
-
+    
     markup = await categories_keyboard()
     if isinstance(message, types.Message):
         msg = await message.answer('Дивись, що у нас є', reply_markup=markup)

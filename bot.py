@@ -34,7 +34,7 @@ def register_all_filters(dp: Dispatcher):
 
 
 def register_all_handlers(dp: Dispatcher):
-    register_admin(dp)
+    # register_admin(dp)
     register_ordering(dp)
     register_order(dp)
     register_user(dp)
@@ -47,6 +47,7 @@ async def main():
     logging.basicConfig(
         level=logging.INFO,
         format=u'%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s',
+        filename='v_strava.log'
     )
     config = load_config('.env')
 

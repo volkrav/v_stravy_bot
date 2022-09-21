@@ -101,7 +101,7 @@ async def create_order(order_details: dict) -> Order:
     if order_details['pickup']:
         _address = 'Самовивіз. Знижка -10%'
     else:
-        _address = order_details['addres']
+        _address = order_details['address']
     return Order(
         pickup = order_details['pickup'],
         name = order_details['name'],
