@@ -9,6 +9,7 @@ Pipfile*
 runbot.sh
 *.bak
 *.db
+about.txt
 
 # Distribution / packaging
 .Python build/
