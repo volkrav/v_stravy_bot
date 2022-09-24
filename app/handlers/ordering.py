@@ -161,7 +161,7 @@ async def command_write_phone(message: types.Message, state: FSMContext):
                 data['ordering']['phone'] = message.contact.phone_number
             logger.info(
                 f'command_write_phone OK {message.from_user.id} '
-                f'shared phone {await _format_phone_number(message.contact.phone_number)}')
+                f'shared phone {await utils.format_phone_number(message.contact.phone_number)}')
             await Ordering.preparing_an_order_for_sent.set()
             await _create_order_list(message, state)
         except Exception as err:
@@ -188,7 +188,7 @@ async def _create_order_list(message: types.Message, state: FSMContext):
     answer = view_list_products.text + (
         f'<b>Деталі замовлення:</b>\n'
         f'• Ваше ім\'я: {order.name}\n'
-        f'• Контактний номер: {await _format_phone_number(order.phone)}\n'
+        f'• Контактний номер: {await utils.format_phone_number(order.phone)}\n'
         f'• Доставка: {order.address}\n\n')
 
     amount_payable = view_list_products.amount
@@ -204,16 +204,6 @@ async def _create_order_list(message: types.Message, state: FSMContext):
         f'_create_order_list OK {message.from_user.id} placed an order')
     await _send_order_to_admins(message, answer)
     await _ask_user_for_permission_remember_data(message, state)
-
-
-async def _format_phone_number(phone: str) -> str:
-    if '+' not in phone:
-        phone = '+' + phone
-    return (f'({phone[3:6]}) '
-            f'{phone[6:9]}-'
-            f'{phone[9:11]}-'
-            f'{phone[11:]}'
-            )
 
 
 async def _send_order_to_admins(message: types.Message, answer: str):

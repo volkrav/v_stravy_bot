@@ -117,19 +117,46 @@ async def write_user_to_users(message: types.Message, state: FSMContext):
     order_data = state_data.get('ordering', '')
     user_id = message.from_user.id
     name = order_data.get('name', '')
+    address = order_data.get('address', '')
     pickup = order_data.get('pickup', '')
     if pickup:
         address = 'Самовивіз'
-    else:
-        address = order_data.get('address', '')
     phone = order_data.get('phone', '')
     if '+' not in phone:
         phone = '+' + phone
-    if await check_user_in_users(message.from_user.id):
-        await message.answer('check_user_in_users worked')
-    await message.answer(f'{user_id=}\n{name=}\n{pickup=}\n{address=}\n{phone=}')
+    if not await check_user_in_users(user_id):
+        await db_api.insert(
+            'users',
+            {
+                'id': user_id,
+                'name': name,
+                'address': address,
+                'pickup': pickup,
+                'phone': phone
+            }
+        )
+        await message.answer(f'Записав наступні дані:\n'
+                             f'Ім\'я: {name=}\n'
+                             f'Номер телефону: {await format_phone_number(phone)}'
+                             f'Адреса доставки: {address}'
+                             )
+    else:
+        await message.answer('Такий користувач вже існує.\n' +
+                       'Для зміни даних сокристайтеся пунктом:\n' +
+                       '-> 😇 Особиста інформація\n' +
+                       'в загальному меню.')
 
 
 async def check_user_in_users(user_id: int) -> bool:
     users = await db_api.select_where_and('users', ['id'], {'id': user_id})
     return users or False
+
+
+async def format_phone_number(phone: str) -> str:
+    if '+' not in phone:
+        phone = '+' + phone
+    return (f'({phone[3:6]}) '
+            f'{phone[6:9]}-'
+            f'{phone[9:11]}-'
+            f'{phone[11:]}'
+            )
