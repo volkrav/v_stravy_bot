@@ -58,34 +58,42 @@ async def command_delivery_or_pickup(message: types.Message, state: FSMContext):
 async def command_yes_or_no(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
 
+    # Перевіряю відповіді, доставки чи самовивіз
     if (message.text == 'Ні' and
             (current_state == 'Ordering:pickup' or
-            current_state == 'Ordering:delivery')):
+             current_state == 'Ordering:delivery')):
         return await command_start_ordering(message, state)
-    elif message.text == 'Ні' and current_state == 'Ordering:ask_user_remember_data':
-        await message.answer('Зрозумів. Не записую Ваші дані')
-        logger.info(
-            f'command_yes_or_no OK {message.from_user.id} selected not to remember data')
-        await Ordering.preparing_an_order_for_sent.set()
-        return
+
     elif message.text == 'Так' and current_state == 'Ordering:pickup':
         async with state.proxy() as data:
             data['ordering']['pickup'] = True
         logger.info(
             f'command_yes_or_no OK {message.from_user.id} selected pickup')
         await _get_name(message)
+
     elif message.text == 'Так' and current_state == 'Ordering:delivery':
         async with state.proxy() as data:
             data['ordering']['pickup'] = False
         logger.info(
             f'command_yes_or_no OK {message.from_user.id} selected delivery')
         await _get_address(message)
+
+    # Перевіряю відповіді, запам'ятати дані користувача чи ні
+    elif message.text == 'Ні' and current_state == 'Ordering:ask_user_remember_data':
+        await message.answer('Зрозумів. Не записую Ваші дані')
+        logger.info(
+            f'command_yes_or_no OK {message.from_user.id} selected not to remember data')
+        await state.finish()
+        return await start.user_start(message, state)
+
     elif message.text == 'Так' and current_state == 'Ordering:ask_user_remember_data':
         await message.answer('Записую Ваші дані')
         logger.info(
             f'command_yes_or_no OK {message.from_user.id} selected to remember data')
-        await Ordering.preparing_an_order_for_sent.set()
-        return
+        await state.finish()
+        return await start.user_start(message, state)
+
+    # Обробка непідтримуваної команди
     else:
         logger.error(
             f'command_yes_or_no BAD {message.from_user.id} unsupported command {message.text}')
@@ -106,13 +114,16 @@ async def _get_name(message: types.Message):
 
 
 async def command_write_name(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['ordering']['name'] = message.text
-        await message.answer(data['ordering'])
-    logger.info(
-        f'command_write_name OK {message.from_user.id} entered name {message.text}')
-    await _get_phone(message)
-
+    try:
+        async with state.proxy() as data:
+            data['ordering']['name'] = message.text
+        logger.info(
+            f'command_write_name OK {message.from_user.id} entered name {message.text}')
+        await _get_phone(message)
+    except Exception as err:
+        logger.error(
+            f'command_write_name BAD {message.from_user.id} '
+            f'get {err.args}')
 
 async def _get_phone(message: types.Message):
     await message.answer('Для зв\'язку з Вами нам потрібен Ваш номер телефону. Натисніть ⌨️⤵️',
@@ -121,24 +132,35 @@ async def _get_phone(message: types.Message):
 
 
 async def command_write_address(message: types.Message, state: FSMContext):
-    async with state.proxy() as data:
-        data['ordering']['address'] = message.text
-    logger.info(
-        f'command_write_address OK {message.from_user.id} entered address {message.text}')
-    await _get_name(message)
+    try:
+        async with state.proxy() as data:
+            data['ordering']['address'] = message.text
+        logger.info(
+            f'command_write_address OK {message.from_user.id} entered address {message.text}')
+        await _get_name(message)
+    except Exception as err:
+        logger.error(
+            f'command_write_address BAD {message.from_user.id} '
+            f'get {err.args}')
 
 
 async def command_write_phone(message: types.Message, state: FSMContext):
     if message.contact:
-        async with state.proxy() as data:
-            data['ordering']['phone'] = message.contact.phone_number
-        logger.info(
-            f'command_write_phone OK {message.from_user.id} '
-            f'shared phone {await _format_phone_number(message.contact.phone_number)}')
-        await Ordering.preparing_an_order_for_sent.set()
-        await _create_order_list(message, state)
+        try:
+            async with state.proxy() as data:
+                data['ordering']['phone'] = message.contact.phone_number
+            logger.info(
+                f'command_write_phone OK {message.from_user.id} '
+                f'shared phone {await _format_phone_number(message.contact.phone_number)}')
+            await Ordering.preparing_an_order_for_sent.set()
+            await _create_order_list(message, state)
+        except Exception as err:
+            logger.error(
+                f'command_write_phone BAD {message.from_user.id} '
+                f'get {err.args}')
     else:
-        await message.answer('Натисніть, будь ласка, "Відправити номер" ⌨️⤵️')
+        await message.answer('Натисніть, будь ласка, "Відправити номер" ⌨️⤵️',
+                             reply_markup=reply.kb_share_contact)
         logger.error(
             f'command_write_phone BAD {message.from_user.id} '
             f'unsupported command {message.text}')
@@ -172,7 +194,6 @@ async def _create_order_list(message: types.Message, state: FSMContext):
         f'_create_order_list OK {message.from_user.id} placed an order')
     await _send_order_to_admins(message, answer)
     await _ask_user_for_permission_remember_data(message, state)
-    # await start.user_start(message, state)
 
 
 async def command_cancel_ordering(message: types.Message, state: FSMContext):
@@ -205,7 +226,7 @@ async def _ask_user_for_permission_remember_data(message: types.Message, state: 
     await Ordering.ask_user_remember_data.set()
     await message.answer('❓Дозволите мені запам\'ятати Ваші контактні дані, ' +
                          'щоб наступного разу я міг запропонувати ввести іх замість Вас?',
-                         reply_markup=reply.kb_yes_or_no)
+                         reply_markup=reply.kb_yes_or_no_without_cancel)
 
 
 def register_ordering(dp: Dispatcher):

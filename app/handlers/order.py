@@ -35,7 +35,8 @@ async def command_change_order(message: types.Message, state: FSMContext):
         except MessageToDeleteNotFound:
             print(f'повідомлення {data["msg_view_order"]} вже було видалено')
         except KeyError:
-            print(f'command_change_order Команда не актуальна, data[\'msg_view_order\'] не існує')
+            print(
+                f'command_change_order Команда не актуальна, data[\'msg_view_order\'] не існує')
 
         if 'order' in data and data['order'].keys():
             current_order = data['order']
@@ -53,7 +54,7 @@ async def command_change_order(message: types.Message, state: FSMContext):
                            )
             answer += f'Сумма до сплати: {amount_payable} грн.'
             msg = await message.answer(text=answer, reply_markup=reply.ReplyKeyboardMarkup(
-                keyboard=[[reply.KeyboardButton(text='✖️ Вихід')]],
+                keyboard=[[reply.KeyboardButton(text='❌ Вихід')]],
                 resize_keyboard=True
             ))
             data['msg_change_order'] = msg['message_id']
@@ -74,7 +75,8 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
             print(
                 f'command_change_quantity - повідомлення {data["msg_change_order"]} вже було видалено')
         except KeyError:
-            print(f'command_change_quantity Команда не актуальна, data[\'msg_view_order\'] не існує')
+            print(
+                f'command_change_quantity Команда не актуальна, data[\'msg_view_order\'] не існує')
 
         current_quantity = data['order'][current_uid]
         data['uid_for_change_quantity'] = current_uid
@@ -94,7 +96,8 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
         print(
             f'command_change_quantity - повідомлення {message["message_id"]} вже було видалено')
     except KeyError:
-        print(f'command_change_quantity Команда не актуальна, data[\'msg_view_order\'] не існує')
+        print(
+            f'command_change_quantity Команда не актуальна, data[\'msg_view_order\'] не існує')
 
     await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
                          reply_markup=reply.kb_quantity)
@@ -124,7 +127,8 @@ async def command_del_product(message: types.Message, state: FSMContext):
         print(
             f'command_del_product - повідомлення {message["message_id"]} вже було видалено')
     except KeyError:
-        print(f'command_del_product Команда не актуальна, data[\'msg_view_order\'] не існує')
+        print(
+            f'command_del_product Команда не актуальна, data[\'msg_view_order\'] не існує')
 
     async with state.proxy() as data:
         try:
@@ -133,7 +137,8 @@ async def command_del_product(message: types.Message, state: FSMContext):
             print(
                 f'command_change_quantity - повідомлення {data["msg_change_order"]} вже було видалено')
         except KeyError:
-            print(f'command_del_product Команда не актуальна, data[\'msg_view_order\'] не існує')
+            print(
+                f'command_del_product Команда не актуальна, data[\'msg_view_order\'] не існує')
 
         try:
             del data['order'][current_uid]
@@ -160,7 +165,8 @@ async def command_back_to_view_order(message: types.Message, state: FSMContext):
     except MessageToDeleteNotFound:
         print(f'повідомлення {data["msg_change_order"]} вже було видалено')
     except KeyError:
-        print(f'command_back_to_view_order Команда не актуальна, data[\'msg_view_order\'] не існує')
+        print(
+            f'command_back_to_view_order Команда не актуальна, data[\'msg_view_order\'] не існує')
 
     await command_view_order(message, state)
 
@@ -178,16 +184,21 @@ async def _get_current_uid_from_part(part_uid: int, state: FSMContext) -> str:
 
 
 def register_order(dp: Dispatcher):
-    dp.register_message_handler(command_view_order, Text(equals='Ваше замовлення',
-                                                         ignore_case=True), state='*')
-    dp.register_message_handler(command_back_to_command_menu, Text(equals='↩️ До каталогу',
-                                                                   ignore_case=True), state=Buy.view_order)
+    dp.register_message_handler(command_view_order,
+                                Text(equals='Ваше замовлення',
+                                     ignore_case=True),
+                                state='*')
+    dp.register_message_handler(command_back_to_command_menu,
+                                Text(equals='↩️ До каталогу',
+                                     ignore_case=True),
+                                state=[None, Buy.view_order])
     dp.register_message_handler(command_change_order, Text(equals='✏️ Змінити',
                                                            ignore_case=True), state=Buy.view_order)
     dp.register_message_handler(command_clear_order, Text(equals='🧹 Очистити',
                                                           ignore_case=True), state=Buy.view_order)
-    dp.register_message_handler(command_back_to_view_order, Text(equals='✖️ Вихід',
-                                                                 ignore_case=True), state=Buy.change_order)
+    dp.register_message_handler(command_back_to_view_order,
+                                Text(equals='❌ Вихід', ignore_case=True),
+                                state=[Buy.change_order])
     dp.register_message_handler(command_change_quantity, Text(startswith='/change',
                                                               ignore_case=True), state=Buy.change_order)
     dp.register_message_handler(command_del_product, Text(startswith='/del',

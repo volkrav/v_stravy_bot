@@ -31,7 +31,7 @@ kb_catalog = ReplyKeyboardMarkup(
             KeyboardButton(text='Ваше замовлення')
         ],
         [
-            KeyboardButton(text='✖️ Вихід')
+            KeyboardButton(text='❌ Вихід')
         ]
     ],
     resize_keyboard=True
@@ -91,10 +91,17 @@ btn_no = KeyboardButton(text='Ні')
 kb_yes_or_no = ReplyKeyboardMarkup(resize_keyboard=True).row(
     btn_no, btn_yes).add(btn_cancel_ordering)
 
+kb_yes_or_no_without_cancel = ReplyKeyboardMarkup(resize_keyboard=True).row(
+    btn_no, btn_yes)
+
+
 # ? Кнопка Скасувати
-kb_cancel_ordering = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_cancel_ordering)
+kb_cancel_ordering = ReplyKeyboardMarkup(
+    resize_keyboard=True).add(btn_cancel_ordering)
 
 # ? Кнопка Поділитися номером телефону + Скасувати
-btn_share_contact = KeyboardButton(text='Відправити номер', request_contact=True)
+btn_share_contact = KeyboardButton(
+    text='Відправити номер', request_contact=True)
 
-kb_share_contact = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_share_contact).add(btn_cancel_ordering)
+kb_share_contact = ReplyKeyboardMarkup(resize_keyboard=True).add(
+    btn_share_contact).add(btn_cancel_ordering)

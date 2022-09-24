@@ -11,7 +11,7 @@ from app.services import utils
 
 
 async def list_categories(message: Union[types.Message, types.CallbackQuery], state: FSMContext, **kwargs):
-    
+
     markup = await categories_keyboard()
     if isinstance(message, types.Message):
         msg = await message.answer('Дивись, що у нас є', reply_markup=markup)
@@ -110,8 +110,10 @@ async def navigate(call: types.CallbackQuery, state: FSMContext, callback_data: 
 
 def register_menu(dp: Dispatcher):
     dp.register_callback_query_handler(navigate,
-                                       menu_cd.filter(), state='*')
-    dp.register_message_handler(command_exit, Text(equals='✖️ Вихід',
-                                                          ignore_case=True), state='*')
+                                       menu_cd.filter(),
+                                       state='*')
+    dp.register_message_handler(command_exit,
+                                Text(equals='❌ Вихід', ignore_case=True),
+                                state='*')
 
 # ✖️ Вихід
