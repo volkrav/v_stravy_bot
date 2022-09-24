@@ -38,6 +38,12 @@ async def command_start_ordering(message: types.Message, state: FSMContext):
     await Ordering.delivery_or_pickup.set()
 
 
+async def command_cancel_ordering(message: types.Message, state: FSMContext):
+    logger.info(
+        f'command_cancel_ordering OK {message.from_user.id} canceled order')
+    await order.command_view_order(message, state)
+
+
 async def command_delivery_or_pickup(message: types.Message, state: FSMContext):
     if message.text == '💪 Самовивіз':
         await start.command_location(message, state)
@@ -90,15 +96,18 @@ async def command_yes_or_no(message: types.Message, state: FSMContext):
         await message.answer('Записую Ваші дані')
         logger.info(
             f'command_yes_or_no OK {message.from_user.id} selected to remember data')
-        await state.finish()
-        return await start.user_start(message, state)
+        await utils.write_user_to_users(message, state)
 
     # Обробка непідтримуваної команди
     else:
         logger.error(
             f'command_yes_or_no BAD {message.from_user.id} unsupported command {message.text}')
+        if current_state == 'Ordering:pickup' or current_state == 'Ordering:delivery':
+            markup = reply.kb_yes_or_no
+        elif current_state == 'Ordering:ask_user_remember_data':
+            markup = reply.kb_yes_or_no_without_cancel
         await message.answer('Потрібно вибрати "Так" або "Ні" ⌨️⤵️',
-                             reply_markup=reply.kb_yes_or_no)
+                             reply_markup=markup)
 
 
 async def _get_address(message: types.Message):
@@ -124,6 +133,7 @@ async def command_write_name(message: types.Message, state: FSMContext):
         logger.error(
             f'command_write_name BAD {message.from_user.id} '
             f'get {err.args}')
+
 
 async def _get_phone(message: types.Message):
     await message.answer('Для зв\'язку з Вами нам потрібен Ваш номер телефону. Натисніть ⌨️⤵️',
@@ -196,12 +206,6 @@ async def _create_order_list(message: types.Message, state: FSMContext):
     await _ask_user_for_permission_remember_data(message, state)
 
 
-async def command_cancel_ordering(message: types.Message, state: FSMContext):
-    logger.info(
-        f'command_cancel_ordering OK {message.from_user.id} canceled order')
-    await order.command_view_order(message, state)
-
-
 async def _format_phone_number(phone: str) -> str:
     if '+' not in phone:
         phone = '+' + phone
@@ -244,8 +248,6 @@ def register_ordering(dp: Dispatcher):
                                     Ordering.delivery,
                                     Ordering.ask_user_remember_data,
                                 ])
-    # dp.register_message_handler(command_yes_or_no,
-    #                             state=Ordering.delivery)
     dp.register_message_handler(command_write_name,
                                 state=Ordering.get_name)
     dp.register_message_handler(command_write_address,
@@ -253,5 +255,3 @@ def register_ordering(dp: Dispatcher):
     dp.register_message_handler(command_write_phone,
                                 content_types=types.ContentType.ANY,
                                 state=Ordering.get_phone)
-
-# ❌ Відміна

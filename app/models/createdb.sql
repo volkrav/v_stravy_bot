@@ -25,9 +25,11 @@ CREATE TABLE IF NOT EXISTS menu_keybords (
 );
 
 CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER UNIQUE NOT NULL,
-    name TEXT
+    id      INTEGER   PRIMARY KEY,
+    name    TEXT,
+    address TEXT,
+    pickup  BOOL,
+    phone   CHAR (25)
 );
 
 CREATE TABLE IF NOT EXISTS cart (
