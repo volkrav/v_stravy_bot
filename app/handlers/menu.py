@@ -10,6 +10,11 @@ from app.models import db_api
 from app.services import utils
 
 
+'''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
+
+'''************************ СПИСОК КАТЕГОРІЙ ************************'''
+
+
 async def list_categories(message: Union[types.Message, types.CallbackQuery], state: FSMContext, **kwargs):
 
     markup = await categories_keyboard()
@@ -30,6 +35,9 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], st
         #                                  )
 
 
+'''************************ СПИСОК ТОВАРІВ ************************'''
+
+
 async def list_products(message: Union[types.Message, types.CallbackQuery], category, state: FSMContext, **kwargs):
     markup = await products_keyboard(category)
     if isinstance(message, types.Message):
@@ -43,6 +51,9 @@ async def list_products(message: Union[types.Message, types.CallbackQuery], cate
         call = message
 
         await call.message.edit_reply_markup(markup)
+
+
+'''************************ ПЕРЕГЛЯД ТОВАРУ ************************'''
 
 
 async def show_product(message: types.CallbackQuery, category, product, state: FSMContext, **kwargs):

@@ -141,12 +141,6 @@ async def command_yes_or_no(message: types.Message, state: FSMContext):
                              reply_markup=markup)
 
 
-async def _get_address(message: types.Message):
-    await message.answer(text='Введіть, будь ласка, адресу доставки: ⌨️⤵️',
-                         reply_markup=reply.kb_cancel_ordering)
-    await Ordering.get_address.set()
-
-
 async def _get_name(message: types.Message):
     await message.answer(text='Введіть, будь ласка, Ваше ім\'я: ⌨️⤵️',
                          reply_markup=reply.kb_cancel_ordering)
@@ -166,10 +160,10 @@ async def command_write_name(message: types.Message, state: FSMContext):
             f'get {err.args}')
 
 
-async def _get_phone(message: types.Message):
-    await message.answer('Для зв\'язку з Вами нам потрібен Ваш номер телефону. Натисніть ⌨️⤵️',
-                         reply_markup=reply.kb_share_contact)
-    await Ordering.get_phone.set()
+async def _get_address(message: types.Message):
+    await message.answer(text='Введіть, будь ласка, адресу доставки: ⌨️⤵️',
+                         reply_markup=reply.kb_cancel_ordering)
+    await Ordering.get_address.set()
 
 
 async def command_write_address(message: types.Message, state: FSMContext):
@@ -183,6 +177,12 @@ async def command_write_address(message: types.Message, state: FSMContext):
         logger.error(
             f'command_write_address BAD {message.from_user.id} '
             f'get {err.args}')
+
+
+async def _get_phone(message: types.Message):
+    await message.answer('Для зв\'язку з Вами нам потрібен Ваш номер телефону. Натисніть ⌨️⤵️',
+                         reply_markup=reply.kb_share_contact)
+    await Ordering.get_phone.set()
 
 
 async def command_write_phone(message: types.Message, state: FSMContext):
@@ -204,6 +204,13 @@ async def command_write_phone(message: types.Message, state: FSMContext):
         logger.error(
             f'command_write_phone BAD {message.from_user.id} '
             f'unsupported command {message.text}')
+
+
+async def _ask_user_pickup_or_delivery(message: types.Message, state: FSMContext):
+    await Ordering.delivery_or_pickup.set()
+    await message.answer('Замовлення потрібно буде доставити за адресою ' +
+                         'чи Ви заберете самостійно?',
+                         reply_markup=reply.kb_delivery_or_pickup)
 
 
 async def _write_user_data_to_order(message: types.Message, state: FSMContext):
@@ -253,7 +260,7 @@ async def _create_order_list(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['answer'] = answer
     logger.info(
-        f'_create_order_list OK {message.from_user.id} placed an order')
+        f'_create_order_list OK {message.from_user.id} checked an order')
     await Ordering.ask_user_checked_order.set()
     await message.answer('👆 В замовленні всі дані вірні?\nЯ можу відправити його адміністратору?',
                          reply_markup=reply.kb_yes_or_no_without_cancel)
@@ -262,10 +269,12 @@ async def _create_order_list(message: types.Message, state: FSMContext):
 async def _verified_order(message: types.Message, state: FSMContext):
     data = await state.get_data()
     answer = data.get(
-        'answer', f'Виникла непердбачувана помилка в замовленні {data}')
+        'answer', f'Виникла непередбачувана помилка в замовленні:\n {data}')
     await _send_order_to_admins(message, answer)
     if not await utils.check_user_in_users(message.from_user.id):
         return await _ask_user_for_permission_remember_data(message, state)
+    logger.info(
+        f'_verified_order OK {message.from_user.id} successfully placed an order')
     await state.finish()
     await start.user_start(message, state)
 
@@ -279,13 +288,6 @@ async def _send_order_to_admins(message: types.Message, answer: str):
             f'_send_order_to_admins OK {message.from_user.id} '
             f'bot sent order to admin {id_admin}')
     await message.answer('👍 Ваше замовлення відправлено адміністратору.')
-
-
-async def _ask_user_pickup_or_delivery(message: types.Message, state: FSMContext):
-    await Ordering.delivery_or_pickup.set()
-    await message.answer('Замовлення потрібно буде доставити за адресою ' +
-                         'чи Ви заберете самостійно?',
-                         reply_markup=reply.kb_delivery_or_pickup)
 
 
 async def _ask_user_for_permission_remember_data(message: types.Message, state: FSMContext):

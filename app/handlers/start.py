@@ -16,14 +16,20 @@ from app.services import utils
 
 async def user_start(message: types.Message, state: FSMContext):
 
+    if await utils.check_user_in_users(message.from_user.id):
+        user = await utils.get_user_data(message.from_user.id)
+        name = user.name
+    else:
+        name = message.from_user.first_name
+
     try:
         bot = message.bot
 
         await utils.delete_inline_keyboard(bot, message.from_user.id)
 
         await bot.send_message(message.from_user.id,
-                               f'Смачного\n\n'
-                               f'Обирайте потрібне ⤵️',
+                               f'Вітаю, {name}\n\n'
+                               f'Обирайте потрібний розділ ⤵️',
                                reply_markup=reply.kb_start
                                )
     except:
@@ -48,6 +54,12 @@ async def command_location(message: types.Message, state: FSMContext):
                          '<b>Знижка при самовивозі -10%</b>')
 
 
+async def command_about(message: types.Message, state: FSMContext):
+    file = open('about.txt', 'r')
+    answer = file.read()
+    await message.answer(answer)
+
+
 async def command_menu(message: types.Message, state: FSMContext):
     await message.bot.send_message(message.from_user.id,
                                    'Меню',
@@ -55,28 +67,15 @@ async def command_menu(message: types.Message, state: FSMContext):
     await menu.list_categories(message, state)
 
 
-async def show_data(message: types.Message, state: FSMContext):
-    await message.answer('Я show_data\n')
-    async with state.proxy() as data:
-        if data:
-            await message.answer(data)
-
-
-# async def command_show_item(call: types.CallbackQuery, callback_data: dict):
-#     await list_products(call, callback_data['category'])
-
-
 def register_user(dp: Dispatcher):
     dp.register_message_handler(user_start, Text(equals=['start', 'замовити'],
                                                  ignore_case=True), state='*')
     dp.register_message_handler(user_start, CommandStart(), state='*')
+    dp.register_message_handler(command_menu, Text(equals='Меню',
+                                                   ignore_case=True), state='*')
     dp.register_message_handler(command_delivery, Text(equals='🚚 Доставка і оплата',
                                                        ignore_case=True), state='*')
     dp.register_message_handler(command_location, Text(equals='💪 Самовивіз',
                                                        ignore_case=True), state='*')
-    dp.register_message_handler(command_menu, Text(equals='Меню',
-                                                   ignore_case=True), state='*')
-    dp.register_message_handler(show_data, Text(
-        equals='Показати', ignore_case=True), state='*')
-    # dp.register_callback_query_handler(
-    #     command_show_item, inline.menu_cd.filter())
+    dp.register_message_handler(command_about, Text(equals='ℹ️ Про нас',
+                                                    ignore_case=True), state='*')
