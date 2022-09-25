@@ -97,3 +97,23 @@ async def load_product(uid: str, columns: Union[str, List[str]]) -> Dict:
         dict_row[column] = row[index]
     result.append(dict_row)
     return dict_row
+
+async def load_user(user_id: int, columns: Union[str, List[str]]) -> Dict:
+    if isinstance(columns, str):
+        columns_joined = columns
+    elif isinstance(columns, List):
+        columns_joined = ', '.join(columns)
+    async with UseDataBase() as cursor:
+        cursor.execute(
+            f'SELECT {columns_joined} '
+            f'FROM "users" '
+            f'WHERE "id" = ?',
+            (user_id, )
+        )
+        row = cursor.fetchone()
+    result = []
+    dict_row = {}
+    for index, column in enumerate(columns):
+        dict_row[column] = row[index]
+    result.append(dict_row)
+    return dict_row

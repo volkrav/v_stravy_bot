@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
-from app.handlers import echo, order, start
+from app.handlers import order, start
 from app.handlers.cart import Buy
 from app.keyboards import reply
 from app.misc import view
@@ -25,17 +25,21 @@ class Ordering(StatesGroup):
     get_address = State()
     get_name = State()
     get_phone = State()
-    preparing_an_order_for_sent = State()
+    ask_user_used_data = State()
     ask_user_remember_data = State()
 
 
 async def command_start_ordering(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data.setdefault('ordering', {})
-    await message.answer('Готовий до оформлення замовлення', reply_markup=reply.kb_delivery_or_pickup)
+    await message.answer('Готовий до оформлення замовлення')
     logger.info(
         f'command_start_ordering OK {message.from_user.id} started placing an order')
-    await Ordering.delivery_or_pickup.set()
+    if await utils.check_user_in_users(message.from_user.id):
+        await Ordering.ask_user_used_data.set()
+        return await message.answer('Я можу використати Ваші дані з попереднього замовлення?',
+                                    reply_markup=reply.kb_yes_or_no)
+    await _ask_user_pickup_or_delivery(message, state)
 
 
 async def command_cancel_ordering(message: types.Message, state: FSMContext):
@@ -64,7 +68,7 @@ async def command_delivery_or_pickup(message: types.Message, state: FSMContext):
 async def command_yes_or_no(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
 
-    # Перевіряю відповіді, доставки чи самовивіз
+    # Перевіряю відповідь, доставка чи самовивіз
     if (message.text == 'Ні' and
             (current_state == 'Ordering:pickup' or
              current_state == 'Ordering:delivery')):
@@ -84,7 +88,18 @@ async def command_yes_or_no(message: types.Message, state: FSMContext):
             f'command_yes_or_no OK {message.from_user.id} selected delivery')
         await _get_address(message)
 
-    # Перевіряю відповіді, запам'ятати дані користувача чи ні
+    # Перевіряю відповідь, використати дані користувача чи ні
+    elif message.text == 'Ні' and current_state == 'Ordering:ask_user_used_data':
+        logger.info(
+            f'command_yes_or_no OK {message.from_user.id} selected not to used_data')
+        await _ask_user_pickup_or_delivery(message, state)
+
+    elif message.text == 'Так' and current_state == 'Ordering:ask_user_used_data':
+        logger.info(
+            f'command_yes_or_no OK {message.from_user.id} selected used_data')
+        await _write_user_data_to_order(message, state)
+
+    # Перевіряю відповідь, запам'ятати дані користувача чи ні
     elif message.text == 'Ні' and current_state == 'Ordering:ask_user_remember_data':
         await message.answer('Зрозумів. Не записую Ваші дані')
         logger.info(
@@ -162,7 +177,6 @@ async def command_write_phone(message: types.Message, state: FSMContext):
             logger.info(
                 f'command_write_phone OK {message.from_user.id} '
                 f'shared phone {await utils.format_phone_number(message.contact.phone_number)}')
-            await Ordering.preparing_an_order_for_sent.set()
             await _create_order_list(message, state)
         except Exception as err:
             logger.error(
@@ -176,6 +190,28 @@ async def command_write_phone(message: types.Message, state: FSMContext):
             f'unsupported command {message.text}')
 
 
+async def _write_user_data_to_order(message: types.Message, state: FSMContext):
+    user_data = await utils.get_user_data(message.from_user.id)
+    try:
+        async with state.proxy() as data:
+            order_data = data.get('ordering')
+            order_data['name'] = user_data.name
+            order_data['address'] = user_data.address
+            order_data['pickup'] = user_data.pickup
+            order_data['phone'] = user_data.phone
+            logger.info(
+                f'_write_user_data_to_order OK {message.from_user.id} '
+                f'used data {order_data}')
+        await _create_order_list(message, state)
+    except Exception as err:
+        await message.answer('На жаль, за технічних причин, я не зміг використати ' +
+                             'Ваші дані. Про дану проблему повідомлено адміністратора.\n\n' +
+                             'Будь ласка, заповніть дані самостйно.')
+        logger.error(
+            f'_write_user_data_to_order BAD {message.from_user.id} get {err.args}')
+        await _ask_user_pickup_or_delivery(message, state)
+
+
 async def _create_order_list(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         try:
@@ -184,7 +220,6 @@ async def _create_order_list(message: types.Message, state: FSMContext):
         except Exception as err:
             logger.error(
                 f'_create_order_list BAD {message.from_user.id} get {err.args}')
-
     answer = view_list_products.text + (
         f'<b>Деталі замовлення:</b>\n'
         f'• Ваше ім\'я: {order.name}\n'
@@ -199,11 +234,13 @@ async def _create_order_list(message: types.Message, state: FSMContext):
         answer += 'Доставка: 150 грн.\n\n'
     answer += f'Сумма до сплати: {amount_payable} грн.'
     await message.answer('***** Ваше замовлення: *****\n\n' + answer)
-    await message.answer('👍 Ваше замовлення відправлено адміністратору.')
     logger.info(
         f'_create_order_list OK {message.from_user.id} placed an order')
     await _send_order_to_admins(message, answer)
-    await _ask_user_for_permission_remember_data(message, state)
+    if not await utils.check_user_in_users(message.from_user.id):
+        return await _ask_user_for_permission_remember_data(message, state)
+    await state.finish()
+    await start.user_start(message, state)
 
 
 async def _send_order_to_admins(message: types.Message, answer: str):
@@ -214,6 +251,14 @@ async def _send_order_to_admins(message: types.Message, answer: str):
         logger.info(
             f'_send_order_to_admins OK {message.from_user.id} '
             f'bot sent order to admin {id_admin}')
+    await message.answer('👍 Ваше замовлення відправлено адміністратору.')
+
+
+async def _ask_user_pickup_or_delivery(message: types.Message, state: FSMContext):
+    await Ordering.delivery_or_pickup.set()
+    await message.answer('Замовлення потрібно буде доставити за адресою ' +
+                         'чи Ви заберете самостійно?',
+                         reply_markup=reply.kb_delivery_or_pickup)
 
 
 async def _ask_user_for_permission_remember_data(message: types.Message, state: FSMContext):
@@ -236,6 +281,7 @@ def register_ordering(dp: Dispatcher):
                                 state=[
                                     Ordering.pickup,
                                     Ordering.delivery,
+                                    Ordering.ask_user_used_data,
                                     Ordering.ask_user_remember_data,
                                 ])
     dp.register_message_handler(command_write_name,

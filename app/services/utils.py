@@ -3,6 +3,7 @@ from typing import NamedTuple
 from aiogram import Bot, types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageToDeleteNotFound
+from app.handlers import start
 from app.models import db_api
 
 
@@ -29,6 +30,14 @@ class Order(NamedTuple):
 class ViewOrder(NamedTuple):
     text: str
     amount: int
+
+
+class User(NamedTuple):
+    id: int
+    name: str
+    address: str
+    pickup: bool
+    phone: str
 
 
 async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
@@ -136,15 +145,17 @@ async def write_user_to_users(message: types.Message, state: FSMContext):
             }
         )
         await message.answer(f'Записав наступні дані:\n'
-                             f'Ім\'я: {name=}\n'
-                             f'Номер телефону: {await format_phone_number(phone)}'
+                             f'Ім\'я: {name}\n'
+                             f'Номер телефону: {await format_phone_number(phone)}\n'
                              f'Адреса доставки: {address}'
                              )
     else:
         await message.answer('Такий користувач вже існує.\n' +
-                       'Для зміни даних сокристайтеся пунктом:\n' +
-                       '-> 😇 Особиста інформація\n' +
-                       'в загальному меню.')
+                             'Для зміни даних сокристайтеся пунктом:\n' +
+                             '-> 😇 Особиста інформація\n' +
+                             'в загальному меню.')
+    await state.finish()
+    await start.user_start(message, state)
 
 
 async def check_user_in_users(user_id: int) -> bool:
@@ -160,3 +171,16 @@ async def format_phone_number(phone: str) -> str:
             f'{phone[9:11]}-'
             f'{phone[11:]}'
             )
+
+
+async def get_user_data(user_id: int) -> User:
+    user_data = await db_api.load_user(user_id, ['id',
+                                                 'name',
+                                                 'address',
+                                                 'pickup',
+                                                 'phone', ])
+    return User(id = user_data['id'],
+                name = user_data['name'],
+                address = user_data['address'],
+                pickup = user_data['pickup'],
+                phone = user_data['phone'])
