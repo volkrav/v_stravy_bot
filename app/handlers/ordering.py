@@ -26,6 +26,7 @@ class Ordering(StatesGroup):
     get_name = State()
     get_phone = State()
     ask_user_used_data = State()
+    ask_user_checked_order = State()
     ask_user_remember_data = State()
 
 
@@ -38,7 +39,8 @@ async def command_start_ordering(message: types.Message, state: FSMContext):
     if await utils.check_user_in_users(message.from_user.id):
         await Ordering.ask_user_used_data.set()
         return await message.answer('Я можу використати Ваші дані з попереднього замовлення?',
-                                    reply_markup=reply.kb_yes_or_no)
+                                    reply_markup=reply.kb_yes_or_no_without_cancel)
+
     await _ask_user_pickup_or_delivery(message, state)
 
 
@@ -113,13 +115,27 @@ async def command_yes_or_no(message: types.Message, state: FSMContext):
             f'command_yes_or_no OK {message.from_user.id} selected to remember data')
         await utils.write_user_to_users(message, state)
 
+    # Перевіряю відповідь, дані замовлення вірні чи ні
+    elif message.text == 'Ні' and current_state == 'Ordering:ask_user_checked_order':
+        logger.info(
+            f'command_yes_or_no OK {message.from_user.id} answered order_data is not correct')
+        return await order.command_view_order(message, state)
+
+    elif message.text == 'Так' and current_state == 'Ordering:ask_user_checked_order':
+        logger.info(
+            f'command_yes_or_no OK {message.from_user.id} answered order_data is  correct')
+        await _verified_order(message, state)
+
     # Обробка непідтримуваної команди
     else:
         logger.error(
             f'command_yes_or_no BAD {message.from_user.id} unsupported command {message.text}')
-        if current_state == 'Ordering:pickup' or current_state == 'Ordering:delivery':
+        if (current_state == 'Ordering:pickup' or
+                current_state == 'Ordering:delivery'):
             markup = reply.kb_yes_or_no
-        elif current_state == 'Ordering:ask_user_remember_data':
+        elif (current_state == 'Ordering:ask_user_remember_data' or
+              current_state == 'Ordering:ask_user_used_data' or
+              current_state == 'Ordering:ask_user_checked_order'):
             markup = reply.kb_yes_or_no_without_cancel
         await message.answer('Потрібно вибрати "Так" або "Ні" ⌨️⤵️',
                              reply_markup=markup)
@@ -234,8 +250,19 @@ async def _create_order_list(message: types.Message, state: FSMContext):
         answer += 'Доставка: 150 грн.\n\n'
     answer += f'Сумма до сплати: {amount_payable} грн.'
     await message.answer('***** Ваше замовлення: *****\n\n' + answer)
+    async with state.proxy() as data:
+        data['answer'] = answer
     logger.info(
         f'_create_order_list OK {message.from_user.id} placed an order')
+    await Ordering.ask_user_checked_order.set()
+    await message.answer('👆 В замовленні всі дані вірні?\nЯ можу відправити його адміністратору?',
+                         reply_markup=reply.kb_yes_or_no_without_cancel)
+
+
+async def _verified_order(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    answer = data.get(
+        'answer', f'Виникла непердбачувана помилка в замовленні {data}')
     await _send_order_to_admins(message, answer)
     if not await utils.check_user_in_users(message.from_user.id):
         return await _ask_user_for_permission_remember_data(message, state)
@@ -283,6 +310,7 @@ def register_ordering(dp: Dispatcher):
                                     Ordering.delivery,
                                     Ordering.ask_user_used_data,
                                     Ordering.ask_user_remember_data,
+                                    Ordering.ask_user_checked_order
                                 ])
     dp.register_message_handler(command_write_name,
                                 state=Ordering.get_name)
