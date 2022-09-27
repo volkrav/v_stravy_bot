@@ -10,6 +10,7 @@ from app.filters.admin import AdminFilter
 from app.handlers.admin import register_admin
 from app.handlers.ordering import register_ordering
 from app.handlers.start import register_user
+from app.handlers.profile import register_profile
 from app.handlers.menu import register_menu
 from app.handlers.cart import register_cart
 from app.handlers.order import register_order
@@ -39,6 +40,7 @@ def register_all_handlers(dp: Dispatcher):
     register_order(dp)
     register_user(dp)
     register_menu(dp)
+    register_profile(dp)
     register_cart(dp)
     register_echo(dp)
 

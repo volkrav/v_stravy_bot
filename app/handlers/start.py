@@ -1,3 +1,4 @@
+from traceback import StackSummary
 from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import CommandStart, Text
 from aiogram.dispatcher import FSMContext
@@ -7,6 +8,8 @@ from app.config import Config
 from app.handlers import menu
 from app.keyboards import inline, reply
 from app.services import utils
+from app.misc.states import Start
+
 
 
 '''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
@@ -26,6 +29,7 @@ async def user_start(message: types.Message, state: FSMContext):
         bot = message.bot
 
         await utils.delete_inline_keyboard(bot, message.from_user.id)
+        await Start.free.set()
 
         await bot.send_message(message.from_user.id,
                                f'Вітаю, {name}.\n\n'
@@ -46,13 +50,18 @@ async def command_menu(message: types.Message, state: FSMContext):
 
 
 async def command_about(message: types.Message):
+    await Start.free.set()
+
     with open('about.txt', 'r') as file:
         answer = file.read()
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text=answer)
 
 
-async def command_contacts(message: types.Message):
+async def command_contacts(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state == None:
+        await Start.free.set()
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='<b>ГРИЛЬ-БАР "МИСЛИВЦІ"</b>\n\n' +
                                    '🗺 Адреса: м. Київ, вул. Шовковична 13/2\n' +
@@ -61,7 +70,10 @@ async def command_contacts(message: types.Message):
                                    reply_markup=inline.kb_about)
 
 
-async def command_delivery(message: types.Message):
+async def command_delivery(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state == None:
+        await Start.free.set()
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='Замовлення доставляємо по вівторках та п\'ятницях.\n\n' +
                                    'Вартість доставки:\n' +
@@ -71,7 +83,10 @@ async def command_delivery(message: types.Message):
                                    )
 
 
-async def command_location(message: types.Message):
+async def command_location(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state == None:
+        await Start.free.set()
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='Самостійно забрати замовлення можна за адресою:\n\n'
                                    'м. Київ, вул. Шовковичнa 13/2.\n'
@@ -79,17 +94,37 @@ async def command_location(message: types.Message):
                                    '<b>Знижка при самовивозі -10%</b>')
 
 
+async def unsupported_command(message: types.Message):
+    await message.bot.send_message(chat_id=message.from_user.id,
+                                   text='Вибачте, я не розумію цю команду.\n' +
+                                   'Скористайтесь, будь ласка, клавіатурой ⌨️⤵️',
+                                   reply_markup=reply.kb_start)
+
+
 def register_user(dp: Dispatcher):
     dp.register_message_handler(user_start, Text(equals=['start', 'замовити'],
                                                  ignore_case=True), state='*')
     dp.register_message_handler(user_start, CommandStart(), state='*')
-    dp.register_message_handler(command_menu, Text(equals='Меню',
-                                                   ignore_case=True), state='*')
-    dp.register_message_handler(command_about, Text(equals='ℹ️ Про нас',
-                                                    ignore_case=True), state='*')
-    dp.register_message_handler(command_contacts, Text(equals='📞 Контакти',
-                                                       ignore_case=True), state='*')
-    dp.register_message_handler(command_delivery, Text(equals='🚚 Доставка і оплата',
-                                                       ignore_case=True), state='*')
-    dp.register_message_handler(command_location, Text(equals='💪 Самовивіз',
-                                                       ignore_case=True), state='*')
+    dp.register_message_handler(command_menu,
+                                Text(equals='Меню',
+                                     ignore_case=True),
+                                state=[Start.free, None])
+    dp.register_message_handler(command_about,
+                                Text(equals='ℹ️ Про нас',
+                                     ignore_case=True),
+                                state=[Start.free, None]
+                                )
+    dp.register_message_handler(command_contacts,
+                                Text(equals='📞 Контакти',
+                                     ignore_case=True),
+                                state=[Start.free, None])
+    dp.register_message_handler(command_delivery,
+                                Text(equals='🚚 Доставка і оплата',
+                                     ignore_case=True),
+                                state=[Start.free, None])
+    dp.register_message_handler(command_location,
+                                Text(equals='💪 Самовивіз',
+                                     ignore_case=True),
+                                state=[Start.free, None])
+    dp.register_message_handler(unsupported_command,
+                                state=[Start.free, None])

@@ -6,18 +6,14 @@ from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from app.keyboards import reply
 from app.services import utils
+from app.misc.states import Buy
+
 
 from .menu import list_products
 
 logger = logging.getLogger(__name__)
 
 
-class Buy(StatesGroup):
-    free_state = State()
-    add_quantity = State()
-    view_order = State()
-    change_order = State()
-    change_quantity = State()
 
 
 async def add_to_basket(message: types.CallbackQuery, state: FSMContext):

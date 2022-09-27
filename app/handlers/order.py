@@ -4,10 +4,10 @@ from aiogram.dispatcher.filters import Text
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 from app.handlers import start
-from app.handlers.cart import Buy
 from app.keyboards import reply
 from app.services import utils
 from app.misc import view
+from app.misc.states import Buy
 
 
 async def command_view_order(message: types.Message, state: FSMContext):

@@ -1,43 +1,10 @@
-from typing import NamedTuple
-
 from aiogram import Bot, types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 from app.handlers import start
 from app.models import db_api
 
-
-class Product(NamedTuple):
-    uid: str
-    title: str
-    price: int
-    descr: str
-    text: str
-    img: str
-    quantity: str
-    gallery: str
-    url: str
-    partuids: str
-
-
-class Order(NamedTuple):
-    pickup: bool
-    name: str
-    phone: str
-    address: str
-
-
-class ViewOrder(NamedTuple):
-    text: str
-    amount: int
-
-
-class User(NamedTuple):
-    id: int
-    name: str
-    address: str
-    pickup: bool
-    phone: str
+from app.misc.states import Product, Order, ViewOrder, User
 
 
 async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:

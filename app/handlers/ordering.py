@@ -12,22 +12,10 @@ from app.keyboards import reply
 from app.misc import view
 from app.services import utils
 from app.config import Config
+from app.misc.states import Ordering
 
 
 logger = logging.getLogger(__name__)
-
-
-class Ordering(StatesGroup):
-    start = State()
-    delivery_or_pickup = State()
-    pickup = State()
-    delivery = State()
-    get_address = State()
-    get_name = State()
-    get_phone = State()
-    ask_user_used_data = State()
-    ask_user_checked_order = State()
-    ask_user_remember_data = State()
 
 
 async def command_start_ordering(message: types.Message, state: FSMContext):
@@ -52,11 +40,11 @@ async def command_cancel_ordering(message: types.Message, state: FSMContext):
 
 async def command_delivery_or_pickup(message: types.Message, state: FSMContext):
     if message.text == '💪 Самовивіз':
-        await start.command_location(message)
+        await start.command_location(message, state)
         answer = "Продовжуємо оформлювати замовлення самовивізом?"
         await Ordering.pickup.set()
     elif message.text == '🚚 Доставка':
-        await start.command_delivery(message)
+        await start.command_delivery(message, state)
         answer = "Оформити замовлення з доставкою?"
         await Ordering.delivery.set()
     else:
