@@ -5,7 +5,7 @@ from aiogram.dispatcher import FSMContext
 
 from app.config import Config
 from app.handlers import menu
-from app.keyboards import reply
+from app.keyboards import inline, reply
 from app.services import utils
 
 
@@ -28,7 +28,7 @@ async def user_start(message: types.Message, state: FSMContext):
         await utils.delete_inline_keyboard(bot, message.from_user.id)
 
         await bot.send_message(message.from_user.id,
-                               f'Вітаю, {name}\n\n'
+                               f'Вітаю, {name}.\n\n'
                                f'Обирайте потрібний розділ ⤵️',
                                reply_markup=reply.kb_start
                                )
@@ -55,9 +55,9 @@ async def command_location(message: types.Message, state: FSMContext):
 
 
 async def command_about(message: types.Message, state: FSMContext):
-    file = open('about.txt', 'r')
-    answer = file.read()
-    await message.answer(answer)
+    with open('about.txt', 'r') as file:
+        answer = file.read()
+    await message.answer(answer, reply_markup=inline.kb_about)
 
 
 async def command_menu(message: types.Message, state: FSMContext):

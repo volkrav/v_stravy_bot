@@ -4,6 +4,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from app.models import db_api
 
 
+
 '''************************ Меню ************************'''
 
 
@@ -89,5 +90,11 @@ async def product_keyboard(title, uid, price, category):
 
     return markup
 
-'''************************ Buy ************************'''
-# 🛒 Кошик
+'''************************ Про нас ************************'''
+
+kb_about = InlineKeyboardMarkup()
+kb_url = InlineKeyboardButton(text='Наш сайт', url='https://vasylevsky-stravy.com.ua/')
+kb_url_fb = InlineKeyboardButton(text='Ми на Facebook', url='https://www.facebook.com/profile.php?id=100064842037458/')
+kb_url_inst = InlineKeyboardButton(text='Ми в Instagram', url='https://www.instagram.com/ohotnik_kiev_pf/')
+kb_about.add(kb_url)
+kb_about.row(kb_url_fb, kb_url_inst)

@@ -1,6 +1,10 @@
+import logging
+
 from typing import Union
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import MessageToDeleteNotFound
+
 
 from aiogram.dispatcher.filters import Text
 from app.keyboards.inline import categories_keyboard, products_keyboard, product_keyboard, menu_cd
@@ -9,6 +13,8 @@ from app.keyboards import reply
 from app.models import db_api
 from app.services import utils
 
+
+logger = logging.getLogger(__name__)
 
 '''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
 
@@ -99,8 +105,18 @@ async def show_product(message: types.CallbackQuery, category, product, state: F
 
 
 async def command_exit(message: types.Message, state: FSMContext):
-    await utils.delete_inline_keyboard(message.bot, message.from_user.id)
-    await start.user_start(message, state)
+    try:
+        await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+        logger.info(
+        f'command_exit OK {message.from_user.id} inline keyboard was removed')
+    except MessageToDeleteNotFound:
+        logger.info(
+        f'command_exit OK {message.from_user.id} inline keyboard was removed earlier')
+    except Exception as err:
+        logger.error(
+        f'command_exit BAD {message.from_user.id} get {err.args}')
+    finally:
+        await start.user_start(message, state)
 
 
 async def navigate(call: types.CallbackQuery, state: FSMContext, callback_data: dict):
