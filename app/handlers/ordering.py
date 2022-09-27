@@ -52,11 +52,11 @@ async def command_cancel_ordering(message: types.Message, state: FSMContext):
 
 async def command_delivery_or_pickup(message: types.Message, state: FSMContext):
     if message.text == '💪 Самовивіз':
-        await start.command_location(message, state)
+        await start.command_location(message)
         answer = "Продовжуємо оформлювати замовлення самовивізом?"
         await Ordering.pickup.set()
     elif message.text == '🚚 Доставка':
-        await start.command_delivery(message, state)
+        await start.command_delivery(message)
         answer = "Оформити замовлення з доставкою?"
         await Ordering.delivery.set()
     else:

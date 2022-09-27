@@ -38,33 +38,45 @@ async def user_start(message: types.Message, state: FSMContext):
                              f'напишіть йому: \n{config.tg_bot.bot_url}',)
 
 
-async def command_delivery(message: types.Message, state: FSMContext):
-    await message.answer('Замовлення доставляємо по вівторках та п\'ятницях.\n\n' +
-                         'Вартість доставки:\n' +
-                         '🚚 Кур\'єром (Центр, Поділ, Дарницький​): 150грн.\n' +
-                         '🚚 Кур\'єром (Київ​, інші райони): 180грн.\n\n' +
-                         '<b>При замовленні від 800 грн - доставка (Київ) безкоштовно</b>\n'
-                         )
-
-
-async def command_location(message: types.Message, state: FSMContext):
-    await message.answer('Самостійно забрати замовлення можна за адресою:\n\n'
-                         'м. Київ, вул. Шовковичнa 13/2.\n'
-                         'Гриль-бар "Мисливці"\n\n'
-                         '<b>Знижка при самовивозі -10%</b>')
-
-
-async def command_about(message: types.Message, state: FSMContext):
-    with open('about.txt', 'r') as file:
-        answer = file.read()
-    await message.answer(answer, reply_markup=inline.kb_about)
-
-
 async def command_menu(message: types.Message, state: FSMContext):
-    await message.bot.send_message(message.from_user.id,
-                                   'Меню',
+    await message.bot.send_message(chat_id=message.from_user.id,
+                                   text='Меню',
                                    reply_markup=reply.kb_catalog)
     await menu.list_categories(message, state)
+
+
+async def command_about(message: types.Message):
+    with open('about.txt', 'r') as file:
+        answer = file.read()
+    await message.bot.send_message(chat_id=message.from_user.id,
+                                   text=answer)
+
+
+async def command_contacts(message: types.Message):
+    await message.bot.send_message(chat_id=message.from_user.id,
+                                   text='<b>ГРИЛЬ-БАР "МИСЛИВЦІ"</b>\n\n' +
+                                   '🗺 Адреса: м. Київ, вул. Шовковична 13/2\n' +
+                                   '📞 Телефон: +38 (063) 014-20-60\n' +
+                                   '✉️ E-mail: barohotnikk@ukr.net\n',
+                                   reply_markup=inline.kb_about)
+
+
+async def command_delivery(message: types.Message):
+    await message.bot.send_message(chat_id=message.from_user.id,
+                                   text='Замовлення доставляємо по вівторках та п\'ятницях.\n\n' +
+                                   'Вартість доставки:\n' +
+                                   '🚚 Кур\'єром (Центр, Поділ, Дарницький​): 150грн.\n' +
+                                   '🚚 Кур\'єром (Київ​, інші райони): 180грн.\n\n' +
+                                   '<b>При замовленні від 800 грн - доставка (Київ) безкоштовно</b>\n'
+                                   )
+
+
+async def command_location(message: types.Message):
+    await message.bot.send_message(chat_id=message.from_user.id,
+                                   text='Самостійно забрати замовлення можна за адресою:\n\n'
+                                   'м. Київ, вул. Шовковичнa 13/2.\n'
+                                   'Гриль-бар "Мисливці"\n\n'
+                                   '<b>Знижка при самовивозі -10%</b>')
 
 
 def register_user(dp: Dispatcher):
@@ -73,9 +85,11 @@ def register_user(dp: Dispatcher):
     dp.register_message_handler(user_start, CommandStart(), state='*')
     dp.register_message_handler(command_menu, Text(equals='Меню',
                                                    ignore_case=True), state='*')
+    dp.register_message_handler(command_about, Text(equals='ℹ️ Про нас',
+                                                    ignore_case=True), state='*')
+    dp.register_message_handler(command_contacts, Text(equals='📞 Контакти',
+                                                       ignore_case=True), state='*')
     dp.register_message_handler(command_delivery, Text(equals='🚚 Доставка і оплата',
                                                        ignore_case=True), state='*')
     dp.register_message_handler(command_location, Text(equals='💪 Самовивіз',
                                                        ignore_case=True), state='*')
-    dp.register_message_handler(command_about, Text(equals='ℹ️ Про нас',
-                                                    ignore_case=True), state='*')
