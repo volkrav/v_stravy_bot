@@ -6,6 +6,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 class Start(StatesGroup):
     free = State()
 
+class Profile(StatesGroup):
+    view = State()
+
 
 class Ordering(StatesGroup):
     start = State()

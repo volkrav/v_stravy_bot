@@ -105,3 +105,17 @@ btn_share_contact = KeyboardButton(
 
 kb_share_contact = ReplyKeyboardMarkup(resize_keyboard=True).add(
     btn_share_contact).add(btn_cancel_ordering)
+
+
+'''************************ Редагування даних користувача ************************'''
+
+btn_change_name = KeyboardButton(text='✏️ Змінити ім\'я')
+btn_change_address = KeyboardButton(text='✏️ Змінити адресу')
+btn_del_profile = KeyboardButton(text='❌ Видалити усі дані')
+btn_back = KeyboardButton(text='↩️ Назад')
+
+kb_profile = ReplyKeyboardMarkup(resize_keyboard=True).row(
+    btn_change_name, btn_change_address).row(btn_del_profile,
+                                             btn_back)
+
+kb_back = ReplyKeyboardMarkup(resize_keyboard=True).add(btn_back)

@@ -11,13 +11,13 @@ from app.services import utils
 from app.misc.states import Start
 
 
-
 '''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
 
 '''************************ СТАРТОВЕ ВІКНО ************************'''
 
 
 async def user_start(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
 
     if await utils.check_user_in_users(message.from_user.id):
         user = await utils.get_user_data(message.from_user.id)
@@ -27,13 +27,14 @@ async def user_start(message: types.Message, state: FSMContext):
 
     try:
         bot = message.bot
-
+        answer = 'Обирайте потрібний розділ ⤵️'
+        if current_state == None:
+            answer = f'Вітаю, {name}.\n\n' + answer
         await utils.delete_inline_keyboard(bot, message.from_user.id)
         await Start.free.set()
 
-        await bot.send_message(message.from_user.id,
-                               f'Вітаю, {name}.\n\n'
-                               f'Обирайте потрібний розділ ⤵️',
+        await bot.send_message(chat_id=message.from_user.id,
+                               text=answer,
                                reply_markup=reply.kb_start
                                )
     except:

@@ -3,7 +3,6 @@ import logging
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher.filters.state import State, StatesGroup
 from app.keyboards import reply
 from app.services import utils
 from app.misc.states import Buy
@@ -12,8 +11,6 @@ from app.misc.states import Buy
 from .menu import list_products
 
 logger = logging.getLogger(__name__)
-
-
 
 
 async def add_to_basket(message: types.CallbackQuery, state: FSMContext):
@@ -33,7 +30,7 @@ async def add_to_basket(message: types.CallbackQuery, state: FSMContext):
 
     # struct INFO - назва_метода статус_виконання користувач коментар
 
-    await call.message.answer(f'Ви обрали <b>{current_title}</b>')
+    await call.message.answer(f'Ви обрали:\n<b>{current_title}</b>')
     await call.message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
                               reply_markup=reply.kb_quantity)
 
@@ -47,7 +44,8 @@ async def add_quantity_to_order(message: types.Message, state: FSMContext):
             await message.answer(f'Додав до кошика:\n\n <b>{data["order"][current_uid]} шт. * '
                                  f'{data["current_title"]}</b>',
                                  reply_markup=reply.kb_catalog)
-            logger.info(f'add_quantity_to_order OK {message.from_user.id} added sku={current_uid} quantity={(data["order"][current_uid])} to basket')
+            logger.info(
+                f'add_quantity_to_order OK {message.from_user.id} added sku={current_uid} quantity={(data["order"][current_uid])} to basket')
         # await state.finish()
             await Buy.free_state.set()
             await list_products(message, data['partuid'], state=state)
@@ -77,5 +75,3 @@ def register_cart(dp: Dispatcher):
     dp.register_message_handler(
         do_not_add_product, Text(equals='Передумав', ignore_case=True), state='*')
     dp.register_message_handler(add_quantity_to_order, state=Buy.add_quantity)
-
-# ❌
