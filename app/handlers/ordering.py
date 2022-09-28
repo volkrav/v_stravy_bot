@@ -3,6 +3,7 @@ import logging
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+import aiogram.utils.markdown as fmt
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils.exceptions import MessageToDeleteNotFound
 
@@ -138,7 +139,7 @@ async def _get_name(message: types.Message):
 async def command_write_name(message: types.Message, state: FSMContext):
     try:
         async with state.proxy() as data:
-            data['ordering']['name'] = message.text
+            data['ordering']['name'] = fmt.quote_html(message.text)
         logger.info(
             f'command_write_name OK {message.from_user.id} entered name {message.text}')
         await _get_phone(message)
@@ -157,7 +158,7 @@ async def _get_address(message: types.Message):
 async def command_write_address(message: types.Message, state: FSMContext):
     try:
         async with state.proxy() as data:
-            data['ordering']['address'] = message.text
+            data['ordering']['address'] = fmt.quote_html(message.text)
         logger.info(
             f'command_write_address OK {message.from_user.id} entered address {message.text}')
         await _get_name(message)

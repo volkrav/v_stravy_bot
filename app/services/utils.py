@@ -146,8 +146,21 @@ async def get_user_data(user_id: int) -> User:
                                                  'address',
                                                  'pickup',
                                                  'phone', ])
-    return User(id = user_data['id'],
-                name = user_data['name'],
-                address = user_data['address'],
-                pickup = user_data['pickup'],
-                phone = user_data['phone'])
+    return User(id=user_data['id'],
+                name=user_data['name'],
+                address=user_data['address'],
+                pickup=user_data['pickup'],
+                phone=user_data['phone'])
+
+
+async def change_user_name(user_id: int, new_user_name: str) -> None:
+    await db_api.update_set_where('users',
+                                  {'name': new_user_name},
+                                  {'id': user_id})
+
+
+async def change_user_address(user_id: int, new_user_address: str) -> None:
+    await db_api.update_set_where('users',
+                                  {'address': new_user_address,
+                                   'pickup': False},
+                                  {'id': user_id})

@@ -128,4 +128,4 @@ def register_user(dp: Dispatcher):
                                      ignore_case=True),
                                 state=[Start.free, None])
     dp.register_message_handler(unsupported_command,
-                                state=[Start.free, None])
+                                state=[Start.free])

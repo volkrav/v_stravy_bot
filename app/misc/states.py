@@ -8,6 +8,9 @@ class Start(StatesGroup):
 
 class Profile(StatesGroup):
     view = State()
+    change_data = State()
+    change_name = State()
+    change_address = State()
 
 
 class Ordering(StatesGroup):
