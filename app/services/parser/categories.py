@@ -1,6 +1,11 @@
+import logging
+from cmath import log
+
 import requests
+from app.services.parser.DBcm_sync import UseDataBase
 from bs4 import BeautifulSoup
-from DBcm_sync import UseDataBase
+
+logger = logging.getLogger(__name__)
 
 categories_id = {
     'novinki': 275228065091, 'pershispravy': 588357731541, 'vypichka': 495017585511,
@@ -17,7 +22,12 @@ def main():
 
     base_url = 'https://vasylevsky-stravy.com.ua/'
 
-    response = requests.get(base_url, headers=header)
+    try:
+        response = requests.get(base_url, headers=header)
+    except Exception as err:
+        logger.error(
+            f'products.main.requests.get BAD get {err.args}')
+
     soup = BeautifulSoup(response.text, 'lxml')
 
     data = soup.find(
@@ -34,13 +44,16 @@ def main():
         try:
             with UseDataBase() as cursor:
                 cursor.execute(
-                    f"INSERT INTO categories "
-                    f"(partuid, name, alias) "
-                    f'VALUES (?, ?, ?) ',
+                    f'INSERT INTO categories '
+                    f'(partuid, name, alias) '
+                    f'VALUES (?, ?, ?) '
+                    f'ON CONFLICT (partuid) DO UPDATE SET '
+                    f'partuid=excluded.partuid, name=excluded.name, alias=excluded.alias',
                     (category_code, category_name, category_alias)
                 )
         except Exception as err:
-            print(err.args)
+            logger.error(
+                f'categories.main BAD get {err.args}')
 
 
 if __name__ == '__main__':

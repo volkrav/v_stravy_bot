@@ -35,7 +35,7 @@ def register_all_filters(dp: Dispatcher):
 
 
 def register_all_handlers(dp: Dispatcher):
-    # register_admin(dp)
+    register_admin(dp)
     register_ordering(dp)
     register_order(dp)
     register_profile(dp)

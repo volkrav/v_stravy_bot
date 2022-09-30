@@ -4,9 +4,9 @@ import sqlite3
 class UseDataBase:
 
     def __init__(self):
-        self._db = '../../models/v_stravy.db'
+        self._db = 'app/models/v_stravy.db'
 
-    def __enter__(self) -> "cursor":
+    def __enter__(self):
         self.conn = sqlite3.connect(self._db)
         self.cursor = self.conn.cursor()
         return self.cursor
