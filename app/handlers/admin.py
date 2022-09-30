@@ -17,11 +17,12 @@ async def admin_command_parser(message: types.Message, state: FSMContext):
         logger.info(
             f'admin_command_parser OK {message.from_user.id} started parsing')
         runparser.main()
-        await message.answer('Категорії та товари успішно оновилися.')
+        await message.answer('👍 Категорії та товари успішно оновилися.')
         await start.user_start(message, state)
         logger.info(
             f'admin_command_parser OK {message.from_user.id} successfully parsed')
     except Exception as err:
+        await message.answer('☹️ Щось пішло не так. Зафіксував помилку для розробника.')
         logger.error(
             f'admin_command_parser BAD {message.from_user.id} get {err.args}')
 

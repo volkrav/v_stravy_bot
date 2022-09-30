@@ -164,3 +164,8 @@ async def change_user_address(user_id: int, new_user_address: str) -> None:
                                   {'address': new_user_address,
                                    'pickup': False},
                                   {'id': user_id})
+
+
+async def del_user_data(user_id: int) -> None:
+    await db_api.delete_from_where('users',
+                                  {'id': user_id})

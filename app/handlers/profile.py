@@ -26,14 +26,14 @@ async def command_view_profile(message: types.Message, state: FSMContext):
     if await utils.check_user_in_users(message.from_user.id):
         await Profile.change_data.set()
         user: utils.User = await utils.get_user_data(message.from_user.id)
-        answer = (f'<b>Ваша особиста інформація:\n\n</b>'
+        answer = (f'<b>Ваша контактна інформація:\n\n</b>'
                   f'<b>• Ім\'я:</b> {user.name}\n'
                   f'<b>• Номер телефону:</b> {await utils.format_phone_number(user.phone)}\n'
                   f'<b>• Адреса доставки:</b> {user.address}\n'
                   )
         markup = reply.kb_profile
     else:
-        answer = (f'В цьому розділі буде зберігатися Ваша особиста інформація, '
+        answer = (f'В цьому розділі буде зберігатися Ваша контактна інформація, '
                   f'яку я, з Вашого дозволу, запам\'ятаю при оформленні першого замовлення.\n'
                   f'Надалі особисту інформацію можна буде відредагувати або видалити.'
                   )
@@ -84,6 +84,20 @@ async def command_change_address(message: types.Message, state: FSMContext):
             f'command_change_name BAD {message.from_user.id} get {err.args}')
 
 
+async def command_del_data(message: types.Message, state: FSMContext):
+    try:
+        await utils.del_user_data(message.from_user.id)
+        await message.answer('👍 Ваші контактні дані успішно видалені.')
+        logger.info(
+            f'command_del_data OK {message.from_user.id} deleted data successfully')
+        await start.user_start(message, state)
+    except Exception as err:
+        await message.answer('☹️ Щось пішло не так. Зафіксував помилку для розробника.')
+        logger.error(
+            f'command_del_data BAD {message.from_user.id} get {err.args}')
+        await start.user_start(message, state)
+
+
 def register_profile(dp: Dispatcher):
     dp.register_message_handler(command_view_profile,
                                 Text(equals='😇 Особиста інформація',
@@ -101,3 +115,7 @@ def register_profile(dp: Dispatcher):
                                 state=Profile.change_name)
     dp.register_message_handler(command_change_address,
                                 state=Profile.change_address)
+    dp.register_message_handler(command_del_data,
+                                Text(equals='❌ Видалити усі дані',
+                                     ignore_case=True),
+                                state=[Profile.change_data, None])
