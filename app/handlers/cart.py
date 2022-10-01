@@ -15,69 +15,96 @@ logger = logging.getLogger(__name__)
 
 
 async def add_to_basket(message: types.CallbackQuery, state: FSMContext):
-    call = message
-    product_uid = call.data.split(':')[-1]
-
     try:
-        await utils.delete_inline_keyboard(message.bot, message.from_user.id)
-        logger.info(
-            f'add_to_basket OK {message.from_user.id} inline keyboard was removed')
-    except MessageToDeleteNotFound:
-        logger.info(
-            f'add_to_basket OK {message.from_user.id} inline keyboard was removed earlier')
+        call = message
+        product_uid = call.data.split(':')[-1]
+
+        try:
+            await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+            logger.info(
+                f'add_to_basket OK {message.from_user.id} inline keyboard was removed')
+        except MessageToDeleteNotFound:
+            logger.info(
+                f'add_to_basket OK {message.from_user.id} inline keyboard was removed earlier')
+        except Exception as err:
+            logger.error(
+                f'add_to_basket utils.delete_inline_keyboard '
+                f'BAD {message.from_user.id} get {err.args}')
+
+        await Buy.add_quantity.set()
+
+        async with state.proxy() as data:
+            data.setdefault('order', {})
+            data['order'][product_uid] = 0
+            data['current_uid'] = product_uid
+            data['partuid'] = call.data.split(':')[1]
+            current_title = data["current_title"]
+
+        # struct INFO - назва_метода статус_виконання користувач коментар
+
+        await call.message.answer(f'Ви обрали:\n<b>{current_title}</b>')
+        await call.message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
+                                  reply_markup=reply.kb_quantity)
     except Exception as err:
         logger.error(
-            f'add_to_basket utils.delete_inline_keyboard '
+            f'add_to_basket '
             f'BAD {message.from_user.id} get {err.args}')
-
-    await Buy.add_quantity.set()
-
-    async with state.proxy() as data:
-        data.setdefault('order', {})
-        data['order'][product_uid] = 0
-        data['current_uid'] = product_uid
-        data['partuid'] = call.data.split(':')[1]
-        current_title = data["current_title"]
-
-    # struct INFO - назва_метода статус_виконання користувач коментар
-
-    await call.message.answer(f'Ви обрали:\n<b>{current_title}</b>')
-    await call.message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
-                              reply_markup=reply.kb_quantity)
 
 
 async def add_quantity_to_order(message: types.Message, state: FSMContext):
-
     try:
-        async with state.proxy() as data:
-            current_uid = data['current_uid']
-            data['order'][current_uid] = int(message.text)
-            await message.answer(f'Додав до кошика:\n\n <b>{data["order"][current_uid]} шт. * '
-                                 f'{data["current_title"]}</b>',
-                                 reply_markup=reply.kb_catalog)
-            logger.info(
-                f'add_quantity_to_order OK {message.from_user.id} added sku={current_uid} quantity={(data["order"][current_uid])} to basket')
-        # await state.finish()
-            await Buy.free_state.set()
-            await list_products(message, data['partuid'], state=state)
-    except ValueError:
-        await message.answer(f'Кількість повинна бути числом, а ви вказали {message.text}.\n'
-                             f'Потрібно прибрати зайві символи та пробіли.')
-        await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
-                             reply_markup=reply.kb_quantity)
+        try:
+            async with state.proxy() as data:
+                current_uid = data['current_uid']
+                data['order'][current_uid] = int(message.text)
+                await message.answer(f'Додав до кошика:\n\n <b>{data["order"][current_uid]} шт. * '
+                                     f'{data["current_title"]}</b>',
+                                     reply_markup=reply.kb_catalog)
+                logger.info(
+                    f'add_quantity_to_order OK {message.from_user.id} added sku={current_uid} quantity={(data["order"][current_uid])} to basket')
+            # await state.finish()
+                await Buy.free_state.set()
+                await list_products(message, data['partuid'], state=state)
+        except ValueError:
+            logger.error(
+                f'add_quantity_to_order '
+                f'BAD {message.from_user.id} unsupported command {message.text}')
+
+            await message.answer(f'Кількість повинна бути числом, а ви вказали {message.text}.\n'
+                                 f'Потрібно прибрати зайві символи та пробіли.')
+            await message.answer('Вкажіть кількість: введіть потрібне число, або натисніть кнопку ⌨️⤵️',
+                                 reply_markup=reply.kb_quantity)
+    except Exception as err:
+        logger.error(
+            f'add_quantity_to_order '
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def do_not_add_product(message: types.Message, state: FSMContext):
-    await message.answer('Добре 😇', reply_markup=reply.kb_catalog)
-    await Buy.free_state.set()
     try:
-        async with state.proxy() as data:
-            del data['order'][data['current_uid']]
-            category = data['partuid']
-        # await state.finish()
-        await list_products(message, category, state=state)
-    except KeyError as err:
-        logger.error(err.args)
+        logger.info(
+            f'do_not_add_product OK {message.from_user.id} do not add product')
+
+        await message.answer('Добре 😇', reply_markup=reply.kb_catalog)
+        await Buy.free_state.set()
+        try:
+            async with state.proxy() as data:
+                del data['order'][data['current_uid']]
+                category = data['partuid']
+            # await state.finish()
+            await list_products(message, category, state=state)
+        except KeyError as err:
+            logger.error(
+                f'do_not_add_product state.proxy() '
+                f'BAD {message.from_user.id} get {err.args}')
+        except Exception as err:
+            logger.error(
+                f'do_not_add_product state.proxy() '
+                f'BAD {message.from_user.id} get {err.args}')
+    except Exception as err:
+        logger.error(
+            f'do_not_add_product '
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 def register_cart(dp: Dispatcher):
