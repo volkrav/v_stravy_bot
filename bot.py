@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.contrib.fsm_storage.redis import RedisStorage2
+from aiogram.utils.exceptions import NetworkError
 
 from app.config import load_config
 from app.filters.admin import AdminFilter
@@ -78,3 +79,8 @@ if __name__ == '__main__':
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger.error('Bot stopped!')
+    except NetworkError:
+        logger.error('get NetworkError, try restart')
+        asyncio.run(main())
+    except Exception as err:
+        logger.error(f'get {err.args}')

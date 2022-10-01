@@ -1,4 +1,5 @@
-from traceback import StackSummary
+import logging
+
 from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import CommandStart, Text
 from aiogram.dispatcher import FSMContext
@@ -8,8 +9,10 @@ from app.config import Config
 from app.handlers import menu
 from app.keyboards import inline, reply
 from app.services import utils
-from app.misc.states import Start
+from app.misc.states import Profile, Start
 
+
+logger = logging.getLogger(__name__)
 
 '''************************ КЛІЄНТСЬКА ЧАСТИНА ************************'''
 
@@ -44,6 +47,7 @@ async def user_start(message: types.Message, state: FSMContext):
 
 
 async def command_menu(message: types.Message, state: FSMContext):
+    await Start.free.set()
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='Меню',
                                    reply_markup=reply.kb_catalog)
@@ -96,9 +100,16 @@ async def command_location(message: types.Message, state: FSMContext):
 
 
 async def unsupported_command(message: types.Message):
+    try:
+        await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+    except Exception as err:
+        logger.error(
+            f'unsupported_command BAD {message.from_user.id} get {err.args}')
+    logger.error(
+        f'unsupported_command BAD {message.from_user.id} unsupported command {message.text}')
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='Вибачте, я не розумію цю команду.\n' +
-                                   'Скористайтесь, будь ласка, клавіатурой ⌨️⤵️',
+                                   'Використовуйте, будь ласка, клавіатуру ⌨️⤵️',
                                    reply_markup=reply.kb_start)
 
 
