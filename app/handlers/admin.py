@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 async def admin_command_parser(message: types.Message, state: FSMContext):
-
-    await message.answer('Вітаю, адміністраторе! Починаю парсинг...')
     try:
+
+        await message.answer('Вітаю, адміністраторе! Починаю парсинг...')
         logger.info(
             f'admin_command_parser OK {message.from_user.id} started parsing')
         runparser.main()
