@@ -11,79 +11,83 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-
-    def get_products(categories_id: dict, header: str) -> dict:
-        tilda_url = f'https://store.tildacdn.com/api/getproductslist/?storepartuid='
-        time.sleep(1)
-        try:
-            for products in (requests.get(tilda_url+str(category_id), headers=header)
-                             for category_id in categories_id.values()):
-                yield products.json()['products']
-        except Exception as err:
-            logger.error(
-                f'get_products BAD get {err.args}')
-
-    def get_product(products: dict) -> dict:
-        for i in range(len(products)):
-            yield products[i]
-
-    for products in get_products(categories_id, header):
-        for product in get_product(products):
-
-            uid = product['uid'].strip()
-            title = product['title'].strip()
-            price = int(float(product['price'].strip()))
-
-            descr = _formatted_text(product['descr']).strip()
-            if 'Склад' not in descr:
-                descr = 'Склад: ' + descr
-
-            text = _formatted_text(product['text']).strip()
-            if 'Склад' in text:
-                regexp_result = re.match(r'.*(Спосіб приготування.*)', text)
-                if regexp_result:
-                    text = regexp_result.group(1)
-
-            if 'Спосіб' in descr:
-                regexp_result = re.match(r'(.+)(Спосіб приготування.*)', descr)
-                if regexp_result:
-                    descr = regexp_result.group(1).strip()
-                    if not text:
-                        text = regexp_result.group(2).strip()
-
-            img = product['editions'][0]['img'].strip()
-            quantity = product['quantity'].strip()
-
-            gallery = ''
-            for img_dict in json.loads(product['gallery']):
-                for link in img_dict.values():
-                    gallery += link.strip() + ','
-            gallery = gallery.strip(',')
-
-            url = product['url'].strip()
-            partuids = ','.join(json.loads(product['partuids']))
-            
+    try:
+        def get_products(categories_id: dict, header: str) -> dict:
+            tilda_url = f'https://store.tildacdn.com/api/getproductslist/?storepartuid='
+            time.sleep(1)
             try:
-                with UseDataBase() as cursor:
-                    cursor.execute(
-                        f'INSERT INTO products '
-                        f'(uid, title, price, descr, text, '
-                        f'img, quantity, gallery, url, partuids) '
-                        f'VALUES '
-                        f'({", ".join("?" * 10)}) '
-                        f'ON CONFLICT (uid) DO UPDATE SET '
-                        f'uid=excluded.uid, title=excluded.title, price=excluded.price, '
-                        f'descr=excluded.descr, text=excluded.text, '
-                        f'img=excluded.img, quantity=excluded.quantity, gallery=excluded.gallery, '
-                        f'url=excluded.url, partuids=excluded.partuids', (
-                            uid, title, price, descr, text,
-                            img, quantity, gallery, url,
-                            partuids
-                        )
-                    )
+                for products in (requests.get(tilda_url+str(category_id), headers=header)
+                                for category_id in categories_id.values()):
+                    yield products.json()['products']
             except Exception as err:
                 logger.error(
-                    f'products.main BAD get {err.args}')
+                    f'get_products BAD get {err.args}')
+
+        def get_product(products: dict) -> dict:
+            for i in range(len(products)):
+                yield products[i]
+
+        for products in get_products(categories_id, header):
+            for product in get_product(products):
+
+                uid = product['uid'].strip()
+                title = product['title'].strip()
+                price = int(float(product['price'].strip()))
+
+                descr = _formatted_text(product['descr']).strip()
+                if 'Склад' not in descr:
+                    descr = 'Склад: ' + descr
+
+                text = _formatted_text(product['text']).strip()
+                if 'Склад' in text:
+                    regexp_result = re.match(r'.*(Спосіб приготування.*)', text)
+                    if regexp_result:
+                        text = regexp_result.group(1)
+
+                if 'Спосіб' in descr:
+                    regexp_result = re.match(r'(.+)(Спосіб приготування.*)', descr)
+                    if regexp_result:
+                        descr = regexp_result.group(1).strip()
+                        if not text:
+                            text = regexp_result.group(2).strip()
+
+                img = product['editions'][0]['img'].strip()
+                quantity = product['quantity'].strip()
+
+                gallery = ''
+                for img_dict in json.loads(product['gallery']):
+                    for link in img_dict.values():
+                        gallery += link.strip() + ','
+                gallery = gallery.strip(',')
+
+                url = product['url'].strip()
+                partuids = ','.join(json.loads(product['partuids']))
+
+                try:
+                    with UseDataBase() as cursor:
+                        cursor.execute(
+                            f'INSERT INTO products '
+                            f'(uid, title, price, descr, text, '
+                            f'img, quantity, gallery, url, partuids) '
+                            f'VALUES '
+                            f'({", ".join("?" * 10)}) '
+                            f'ON CONFLICT (uid) DO UPDATE SET '
+                            f'uid=excluded.uid, title=excluded.title, price=excluded.price, '
+                            f'descr=excluded.descr, text=excluded.text, '
+                            f'img=excluded.img, quantity=excluded.quantity, gallery=excluded.gallery, '
+                            f'url=excluded.url, partuids=excluded.partuids', (
+                                uid, title, price, descr, text,
+                                img, quantity, gallery, url,
+                                partuids
+                            )
+                        )
+                except Exception as err:
+                    logger.error(
+                        f'products.main BAD get {err.args}')
+    except Exception as err:
+        logger.error(
+            f'main '
+            f'BAD _ get {err.args}')
 
 
 def _del_html_tags(str_with_html: str) -> str:

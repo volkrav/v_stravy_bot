@@ -1,7 +1,7 @@
 import logging
-from cmath import log
 
 import requests
+import lxml
 from app.services.parser.DBcm_sync import UseDataBase
 from bs4 import BeautifulSoup
 
@@ -19,41 +19,45 @@ header = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) \
 
 
 def main():
-
-    base_url = 'https://vasylevsky-stravy.com.ua/'
-
     try:
-        response = requests.get(base_url, headers=header)
-    except Exception as err:
-        logger.error(
-            f'products.main.requests.get BAD get {err.args}')
+        base_url = 'https://vasylevsky-stravy.com.ua/'
 
-    soup = BeautifulSoup(response.text, 'lxml')
-
-    data = soup.find(
-        'ul', class_='t967__list t967__menualign_left').find_all(
-        'li', class_='t967__list-item')
-
-    # Отримую список словників з категоріями
-    for row in data:
-        category_name = row.find('a', class_='t-menu__link-item').text.strip()
-        category_alias = row.find(
-            'a', class_='t-menu__link-item').get('href').strip('/ ')
-        category_code = [code for val,
-                         code in categories_id.items() if val == category_alias][0]
         try:
-            with UseDataBase() as cursor:
-                cursor.execute(
-                    f'INSERT INTO categories '
-                    f'(partuid, name, alias) '
-                    f'VALUES (?, ?, ?) '
-                    f'ON CONFLICT (partuid) DO UPDATE SET '
-                    f'partuid=excluded.partuid, name=excluded.name, alias=excluded.alias',
-                    (category_code, category_name, category_alias)
-                )
+            response = requests.get(base_url, headers=header)
         except Exception as err:
             logger.error(
-                f'categories.main BAD get {err.args}')
+                f'products.main.requests.get BAD get {err.args}')
+
+        soup = BeautifulSoup(response.text, 'lxml')
+
+        data = soup.find(
+            'ul', class_='t967__list t967__menualign_left').find_all(
+            'li', class_='t967__list-item')
+
+        # Отримую список словників з категоріями
+        for row in data:
+            category_name = row.find('a', class_='t-menu__link-item').text.strip()
+            category_alias = row.find(
+                'a', class_='t-menu__link-item').get('href').strip('/ ')
+            category_code = [code for val,
+                            code in categories_id.items() if val == category_alias][0]
+            try:
+                with UseDataBase() as cursor:
+                    cursor.execute(
+                        f'INSERT INTO categories '
+                        f'(partuid, name, alias) '
+                        f'VALUES (?, ?, ?) '
+                        f'ON CONFLICT (partuid) DO UPDATE SET '
+                        f'partuid=excluded.partuid, name=excluded.name, alias=excluded.alias',
+                        (category_code, category_name, category_alias)
+                    )
+            except Exception as err:
+                logger.error(
+                    f'categories.main BAD get {err.args}')
+    except Exception as err:
+        logger.error(
+            f'main '
+            f'BAD _ get {err.args}')
 
 
 if __name__ == '__main__':
