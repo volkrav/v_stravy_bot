@@ -33,7 +33,6 @@ def main():
             data = soup.find(
                 'ul', class_='t967__list t967__menualign_left').find_all(
                 'li', class_='t967__list-item')
-            logger.debug("data = soup.find ok")
         except Exception as err:
             logger.error(f'data = soup.find get {err.args}')
         # Отримую список словників з категоріями
