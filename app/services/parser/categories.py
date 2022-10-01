@@ -28,12 +28,14 @@ def main():
             logger.error(
                 f'products.main.requests.get BAD get {err.args}')
 
-        soup = BeautifulSoup(response.text, 'lxml')
-
-        data = soup.find(
-            'ul', class_='t967__list t967__menualign_left').find_all(
-            'li', class_='t967__list-item')
-
+        soup = BeautifulSoup(response.text, 'html.parser')
+        try:
+            data = soup.find(
+                'ul', class_='t967__list t967__menualign_left').find_all(
+                'li', class_='t967__list-item')
+            logger.debug("data = soup.find ok")
+        except Exception as err:
+            logger.error(f'data = soup.find get {err.args}')
         # Отримую список словників з категоріями
         for row in data:
             category_name = row.find('a', class_='t-menu__link-item').text.strip()
