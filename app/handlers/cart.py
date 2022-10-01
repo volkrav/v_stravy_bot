@@ -6,6 +6,7 @@ from aiogram.dispatcher.filters import Text
 from app.keyboards import reply
 from app.services import utils
 from app.misc.states import Buy
+from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 
 from .menu import list_products
@@ -17,7 +18,17 @@ async def add_to_basket(message: types.CallbackQuery, state: FSMContext):
     call = message
     product_uid = call.data.split(':')[-1]
 
-    await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+    try:
+        await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+        logger.info(
+            f'add_to_basket OK {message.from_user.id} inline keyboard was removed')
+    except MessageToDeleteNotFound:
+        logger.info(
+            f'add_to_basket OK {message.from_user.id} inline keyboard was removed earlier')
+    except Exception as err:
+        logger.error(
+            f'add_to_basket utils.delete_inline_keyboard '
+            f'BAD {message.from_user.id} get {err.args}')
 
     await Buy.add_quantity.set()
 
