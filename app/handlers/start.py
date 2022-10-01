@@ -20,20 +20,33 @@ logger = logging.getLogger(__name__)
 
 
 async def user_start(message: types.Message, state: FSMContext):
-    current_state = await state.get_state()
+    logger.info(
+        f'user_start OK {message.from_user.id} started work')
 
-    if await utils.check_user_in_users(message.from_user.id):
-        user = await utils.get_user_data(message.from_user.id)
-        name = user.name
-    else:
-        name = message.from_user.first_name
+    current_state = await state.get_state()
+    try:
+        if await utils.check_user_in_users(message.from_user.id):
+            user = await utils.get_user_data(message.from_user.id)
+            name = user.name
+        else:
+            name = message.from_user.first_name
+    except Exception as err:
+        logger.error(
+            f'user_start if check_user_in_users'
+            f'BAD {message.from_user.id} get {err.args}')
 
     try:
         bot = message.bot
         answer = 'Обирайте потрібний розділ ⤵️'
         if current_state == None:
             answer = f'Вітаю, {name}.\n\n' + answer
-        await utils.delete_inline_keyboard(bot, message.from_user.id)
+        try:
+            await utils.delete_inline_keyboard(bot, message.from_user.id)
+        except Exception as err:
+            logger.error(
+                f'user_start utils.delete_inline_keyboard'
+                f'BAD {message.from_user.id} get {err.args}')
+
         await Start.free.set()
 
         await bot.send_message(chat_id=message.from_user.id,
@@ -47,6 +60,9 @@ async def user_start(message: types.Message, state: FSMContext):
 
 
 async def command_menu(message: types.Message, state: FSMContext):
+    logger.info(
+        f'command_menu OK {message.from_user.id} looking at the menu')
+
     await Start.free.set()
     await message.bot.send_message(chat_id=message.from_user.id,
                                    text='Меню',
@@ -55,48 +71,79 @@ async def command_menu(message: types.Message, state: FSMContext):
 
 
 async def command_about(message: types.Message):
-    await Start.free.set()
+    logger.info(
+        f'command_about OK {message.from_user.id} looking at the about')
 
-    with open('about.txt', 'r') as file:
-        answer = file.read()
-    await message.bot.send_message(chat_id=message.from_user.id,
-                                   text=answer)
+    try:
+        await Start.free.set()
+        with open('about.txt', 'r') as file:
+            answer = file.read()
+        await message.bot.send_message(chat_id=message.from_user.id,
+                                       text=answer)
+    except Exception as err:
+        logger.error(
+            f'command_about'
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_contacts(message: types.Message, state: FSMContext):
-    current_state = await state.get_state()
-    if current_state == None:
-        await Start.free.set()
-    await message.bot.send_message(chat_id=message.from_user.id,
-                                   text='<b>ГРИЛЬ-БАР "МИСЛИВЦІ"</b>\n\n' +
-                                   '🗺 Адреса: м. Київ, вул. Шовковична 13/2\n' +
-                                   '📞 Телефон: +38 (063) 014-20-60\n' +
-                                   '✉️ E-mail: barohotnikk@ukr.net\n',
-                                   reply_markup=inline.kb_about)
+    logger.info(
+        f'command_contacts OK {message.from_user.id} looking at the contacts')
+
+    try:
+        current_state = await state.get_state()
+        if current_state == None:
+            await Start.free.set()
+        await message.bot.send_message(chat_id=message.from_user.id,
+                                       text='<b>ГРИЛЬ-БАР "МИСЛИВЦІ"</b>\n\n' +
+                                       '🗺 Адреса: м. Київ, вул. Шовковична 13/2\n' +
+                                       '📞 Телефон: +38 (063) 014-20-60\n' +
+                                       '✉️ E-mail: barohotnikk@ukr.net\n',
+                                       reply_markup=inline.kb_about)
+    except Exception as err:
+        logger.error(
+            f'command_contacts'
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_delivery(message: types.Message, state: FSMContext):
-    current_state = await state.get_state()
-    if current_state == None:
-        await Start.free.set()
-    await message.bot.send_message(chat_id=message.from_user.id,
-                                   text='Замовлення доставляємо по вівторках та п\'ятницях.\n\n' +
-                                   'Вартість доставки:\n' +
-                                   '🚚 Кур\'єром (Центр, Поділ, Дарницький​): 150грн.\n' +
-                                   '🚚 Кур\'єром (Київ​, інші райони): 180грн.\n\n' +
-                                   '<b>При замовленні від 800 грн - доставка (Київ) безкоштовно</b>\n'
-                                   )
+    logger.info(
+        f'command_delivery OK {message.from_user.id} looking at the delivery')
+
+    try:
+        current_state = await state.get_state()
+        if current_state == None:
+            await Start.free.set()
+        await message.bot.send_message(chat_id=message.from_user.id,
+                                       text='Замовлення доставляємо по вівторках та п\'ятницях.\n\n' +
+                                       'Вартість доставки:\n' +
+                                       '🚚 Кур\'єром (Центр, Поділ, Дарницький​): 150грн.\n' +
+                                       '🚚 Кур\'єром (Київ​, інші райони): 180грн.\n\n' +
+                                       '<b>При замовленні від 800 грн - доставка (Київ) безкоштовно</b>\n'
+                                       )
+    except Exception as err:
+        logger.error(
+            f'command_delivery'
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_location(message: types.Message, state: FSMContext):
-    current_state = await state.get_state()
-    if current_state == None:
-        await Start.free.set()
-    await message.bot.send_message(chat_id=message.from_user.id,
-                                   text='Самостійно забрати замовлення можна за адресою:\n\n'
-                                   'м. Київ, вул. Шовковичнa 13/2.\n'
-                                   'Гриль-бар "Мисливці"\n\n'
-                                   '<b>Знижка при самовивозі -10%</b>')
+    logger.info(
+        f'command_location OK {message.from_user.id} looking at the location')
+
+    try:
+        current_state = await state.get_state()
+        if current_state == None:
+            await Start.free.set()
+        await message.bot.send_message(chat_id=message.from_user.id,
+                                       text='Самостійно забрати замовлення можна за адресою:\n\n'
+                                       'м. Київ, вул. Шовковичнa 13/2.\n'
+                                       'Гриль-бар "Мисливці"\n\n'
+                                       '<b>Знижка при самовивозі -10%</b>')
+    except Exception as err:
+        logger.error(
+            f'command_location'
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def unsupported_command(message: types.Message):
@@ -104,7 +151,8 @@ async def unsupported_command(message: types.Message):
         await utils.delete_inline_keyboard(message.bot, message.from_user.id)
     except Exception as err:
         logger.error(
-            f'unsupported_command BAD {message.from_user.id} get {err.args}')
+            f'unsupported_command utils.delete_inline_keyboard '
+            f'BAD {message.from_user.id} get {err.args}')
     logger.error(
         f'unsupported_command BAD {message.from_user.id} unsupported command {message.text}')
     await message.bot.send_message(chat_id=message.from_user.id,
