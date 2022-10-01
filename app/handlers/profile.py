@@ -22,44 +22,65 @@ logger = logging.getLogger(__name__)
 
 
 async def command_view_profile(message: types.Message, state: FSMContext):
-    await Profile.view.set()
-    if await utils.check_user_in_users(message.from_user.id):
-        await Profile.change_data.set()
-        user: utils.User = await utils.get_user_data(message.from_user.id)
-        answer = (f'<b>Ваша контактна інформація:\n\n</b>'
-                  f'<b>• Ім\'я:</b> {user.name}\n'
-                  f'<b>• Номер телефону:</b> {await utils.format_phone_number(user.phone)}\n'
-                  f'<b>• Адреса доставки:</b> {user.address}\n'
-                  )
-        markup = reply.kb_profile
-    else:
-        answer = (f'В цьому розділі буде зберігатися Ваша контактна інформація, '
-                  f'яку я, з Вашого дозволу, запам\'ятаю при оформленні першого замовлення.\n'
-                  f'Надалі особисту інформацію можна буде відредагувати або видалити.'
-                  )
-        markup = reply.kb_back
-    await message.bot.send_message(chat_id=message.from_user.id,
-                                   text=answer,
-                                   reply_markup=markup)
+    logger.info(
+        f'command_view_profile OK {message.from_user.id} looking at your profile')
+
+    try:
+        await Profile.view.set()
+        if await utils.check_user_in_users(message.from_user.id):
+            await Profile.change_data.set()
+            user: utils.User = await utils.get_user_data(message.from_user.id)
+            answer = (f'<b>Ваша контактна інформація:\n\n</b>'
+                    f'<b>• Ім\'я:</b> {user.name}\n'
+                    f'<b>• Номер телефону:</b> {await utils.format_phone_number(user.phone)}\n'
+                    f'<b>• Адреса доставки:</b> {user.address}\n'
+                    )
+            markup = reply.kb_profile
+        else:
+            answer = (f'В цьому розділі буде зберігатися Ваша контактна інформація, '
+                    f'яку я, з Вашого дозволу, запам\'ятаю при оформленні першого замовлення.\n'
+                    f'Надалі особисту інформацію можна буде відредагувати або видалити.'
+                    )
+            markup = reply.kb_back
+        await message.bot.send_message(chat_id=message.from_user.id,
+                                    text=answer,
+                                    reply_markup=markup)
+    except Exception as err:
+        logger.error(
+            f'command_view_profile '
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_back_to_main_menu(message: types.Message, state: FSMContext):
-    current_state = await state.get_state()
-    if (current_state == 'Profile:change_name' or
-            current_state == 'Profile:change_address'):
-        return await command_view_profile(message, state)
-    await start.user_start(message, state)
+    logger.info(
+        f'command_back_to_main_menu OK {message.from_user.id} back to main menu')
+
+    try:
+        current_state = await state.get_state()
+        if (current_state == 'Profile:change_name' or
+                current_state == 'Profile:change_address'):
+            return await command_view_profile(message, state)
+        await start.user_start(message, state)
+    except Exception as err:
+        logger.error(
+            f'command_back_to_main_menu '
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_change_data(message: types.Message, state: FSMContext):
-    if message.text == '✏️ Змінити ім\'я':
-        await Profile.change_name.set()
-        await message.answer(text='Введіть, будь ласка, нове ім\'я: ⌨️⤵️',
-                             reply_markup=reply.kb_back)
-    elif message.text == '✏️ Змінити адресу':
-        await message.answer(text='Введіть, будь ласка, нову адресу: ⌨️⤵️',
-                             reply_markup=reply.kb_back)
-        await Profile.change_address.set()
+    try:
+        if message.text == '✏️ Змінити ім\'я':
+            await Profile.change_name.set()
+            await message.answer(text='Введіть, будь ласка, нове ім\'я: ⌨️⤵️',
+                                reply_markup=reply.kb_back)
+        elif message.text == '✏️ Змінити адресу':
+            await message.answer(text='Введіть, будь ласка, нову адресу: ⌨️⤵️',
+                                reply_markup=reply.kb_back)
+            await Profile.change_address.set()
+    except Exception as err:
+        logger.error(
+            f'command_change_data '
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_change_name(message: types.Message, state: FSMContext):
