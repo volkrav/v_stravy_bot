@@ -10,6 +10,7 @@ runbot.sh
 *.bak
 *.db
 about.txt
+nohup.out
 
 # Distribution / packaging
 .Python build/
