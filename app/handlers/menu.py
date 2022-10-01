@@ -157,8 +157,8 @@ async def command_exit(message: types.Message, state: FSMContext):
                 f'command_exit OK {message.from_user.id} inline keyboard was removed earlier')
         except Exception as err:
             logger.error(
-                f'command_exit BAD utils.delete_inline_keyboard '
-                f'{message.from_user.id} get {err.args}')
+                f'command_exit utils.delete_inline_keyboard '
+                f'BAD {message.from_user.id} get {err.args}')
         finally:
             await start.user_start(message, state)
     except Exception as err:

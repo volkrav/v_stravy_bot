@@ -41,9 +41,9 @@ async def delete_inline_keyboard(bot: Bot, user_id: int) -> None:
                     message_id=current_message['message_id']
                 )
             except MessageToDeleteNotFound:
-                logger.error(
-                    f'delete_inline_keyboard bot.delete_message BAD '
-                    f'{user_id} get {MessageToDeleteNotFound.args}')
+                logger.info(
+                    f'delete_inline_keyboard '
+                    f'OK {user_id} inline keyboard was removed earlier')
             except Exception as err:
                 logger.error(
                     f'delete_inline_keyboard bot.delete_message BAD {user_id} get {err.args}')

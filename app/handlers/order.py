@@ -23,6 +23,11 @@ async def command_view_order(message: types.Message, state: FSMContext):
         await Buy.view_order.set()
         try:
             await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+            logger.info(
+                f'command_view_order OK {message.from_user.id} inline keyboard was removed')
+        except MessageToDeleteNotFound:
+            logger.info(
+                f'command_view_order OK {message.from_user.id} inline keyboard was removed earlier')
         except Exception as err:
             logger.error(
                 f'command_view_order utils.delete_inline_keyboard '
@@ -51,10 +56,10 @@ async def command_change_order(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             try:
                 await message.bot.delete_message(message.from_user.id, data['msg_view_order'])
-            except MessageToDeleteNotFound as err:
-                logger.error(
-                    f'command_change_order message.bot.delete_message '
-                    f'BAD {message.from_user.id} get {err.args}')
+            except MessageToDeleteNotFound:
+                logger.info(
+                    f'command_change_order '
+                    f'OK {message.from_user.id} inline keyboard was removed earlier')
             except KeyError as err:
                 logger.error(
                     f'command_change_order message.bot.delete_message '
@@ -100,10 +105,10 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             try:
                 await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
-            except MessageToDeleteNotFound as err:
-                logger.error(
-                    f'command_change_quantity message.bot.delete_message '
-                    f'BAD {message.from_user.id} get {err.args}')
+            except MessageToDeleteNotFound:
+                logger.info(
+                    f'command_change_quantity '
+                    f'OK {message.from_user.id} inline keyboard was removed earlier')
             except KeyError as err:
                 logger.error(
                     f'command_change_quantity message.bot.delete_message '
@@ -123,10 +128,10 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
         )
         try:
             await message.bot.delete_message(message.from_user.id, message['message_id'])
-        except MessageToDeleteNotFound as err:
-            logger.error(
-                f'command_change_quantity message.bot.delete_message '
-                f'BAD {message.from_user.id} get {err.args}')
+        except MessageToDeleteNotFound:
+            logger.info(
+                f'command_change_quantity '
+                f'OK {message.from_user.id} inline keyboard was removed earlier')
         except KeyError as err:
             logger.error(
                 f'command_change_quantity message.bot.delete_message '
@@ -173,10 +178,10 @@ async def command_del_product(message: types.Message, state: FSMContext):
             message.text.split('/del')[-1], state)
         try:
             await message.bot.delete_message(message.from_user.id, message['message_id'])
-        except MessageToDeleteNotFound as err:
-            logger.error(
-                f'command_del_product message.bot.delete_message '
-                f'BAD {message.from_user.id} get {err.args}')
+        except MessageToDeleteNotFound:
+            logger.info(
+                f'command_del_product '
+                f'OK {message.from_user.id} inline keyboard was removed earlier')
         except KeyError as err:
             logger.error(
                 f'command_del_product message.bot.delete_message '
@@ -185,10 +190,10 @@ async def command_del_product(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             try:
                 await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
-            except MessageToDeleteNotFound as err:
-                logger.error(
-                    f'command_del_product message.bot.delete_message '
-                    f'BAD {message.from_user.id} get {err.args}')
+            except MessageToDeleteNotFound:
+                logger.info(
+                    f'command_del_product '
+                    f'OK {message.from_user.id} inline keyboard was removed earlier')
             except KeyError as err:
                 logger.error(
                     f'command_del_product message.bot.delete_message '
@@ -235,10 +240,10 @@ async def command_back_to_view_order(message: types.Message, state: FSMContext):
         data = await state.get_data()
         try:
             await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
-        except MessageToDeleteNotFound as err:
-            logger.error(
-                f'command_back_to_view_order message.bot.delete_message '
-                f'BAD {message.from_user.id} get {err.args}')
+        except MessageToDeleteNotFound:
+            logger.info(
+                f'command_back_to_view_order '
+                f'OK {message.from_user.id} inline keyboard was removed earlier')
         except KeyError as err:
             logger.error(
                 f'command_back_to_view_order message.bot.delete_message '

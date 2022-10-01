@@ -3,13 +3,14 @@ import logging
 from aiogram import Dispatcher, types
 from aiogram.dispatcher.filters import CommandStart, Text
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 
 from app.config import Config
 from app.handlers import menu
 from app.keyboards import inline, reply
 from app.services import utils
-from app.misc.states import Profile, Start
+from app.misc.states import Start
 
 
 logger = logging.getLogger(__name__)
@@ -20,61 +21,76 @@ logger = logging.getLogger(__name__)
 
 
 async def user_start(message: types.Message, state: FSMContext):
-    logger.info(
-        f'user_start OK {message.from_user.id} started work')
-
-    current_state = await state.get_state()
     try:
-        if await utils.check_user_in_users(message.from_user.id):
-            user = await utils.get_user_data(message.from_user.id)
-            name = user.name
-        else:
-            name = message.from_user.first_name
-    except Exception as err:
-        logger.error(
-            f'user_start if check_user_in_users'
-            f'BAD {message.from_user.id} get {err.args}')
+        logger.info(
+            f'user_start OK {message.from_user.id} started work')
 
-    try:
-        bot = message.bot
-        answer = 'Обирайте потрібний розділ ⤵️'
-        if current_state == None:
-            answer = f'Вітаю, {name}.\n\n' + answer
+        current_state = await state.get_state()
         try:
-            await utils.delete_inline_keyboard(bot, message.from_user.id)
+            if await utils.check_user_in_users(message.from_user.id):
+                user = await utils.get_user_data(message.from_user.id)
+                name = user.name
+            else:
+                name = message.from_user.first_name
         except Exception as err:
             logger.error(
-                f'user_start utils.delete_inline_keyboard'
+                f'user_start if check_user_in_users'
                 f'BAD {message.from_user.id} get {err.args}')
 
-        await Start.free.set()
+        try:
+            bot = message.bot
+            answer = 'Обирайте потрібний розділ ⤵️'
+            if current_state == None:
+                answer = f'Вітаю, {name}.\n\n' + answer
+            try:
+                await utils.delete_inline_keyboard(bot, message.from_user.id)
+                logger.info(
+                    f'user_start OK {message.from_user.id} inline keyboard was removed')
+            except MessageToDeleteNotFound:
+                logger.info(
+                    f'user_start OK {message.from_user.id} inline keyboard was removed earlier')
+            except Exception as err:
+                logger.error(
+                    f'user_start utils.delete_inline_keyboard '
+                    f'BAD {message.from_user.id} get {err.args}')
 
-        await bot.send_message(chat_id=message.from_user.id,
-                               text=answer,
-                               reply_markup=reply.kb_start
-                               )
-    except:
-        config: Config = bot.get('config')
-        await message.answer(f'Спілкування з ботом через ПП, '
-                             f'напишіть йому: \n{config.tg_bot.bot_url}',)
+            await Start.free.set()
+
+            await bot.send_message(chat_id=message.from_user.id,
+                                   text=answer,
+                                   reply_markup=reply.kb_start
+                                   )
+        except:
+            config: Config = bot.get('config')
+            await message.answer(f'Спілкування з ботом через ПП, '
+                                 f'напишіть йому: \n{config.tg_bot.bot_url}',)
+    except Exception as err:
+        logger.error(
+            f'user_start '
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_menu(message: types.Message, state: FSMContext):
-    logger.info(
-        f'command_menu OK {message.from_user.id} looking at the menu')
+    try:
+        logger.info(
+            f'command_menu OK {message.from_user.id} looking at the menu')
 
-    await Start.free.set()
-    await message.bot.send_message(chat_id=message.from_user.id,
-                                   text='Меню',
-                                   reply_markup=reply.kb_catalog)
-    await menu.list_categories(message, state)
+        await Start.free.set()
+        await message.bot.send_message(chat_id=message.from_user.id,
+                                       text='Меню',
+                                       reply_markup=reply.kb_catalog)
+        await menu.list_categories(message, state)
+    except Exception as err:
+        logger.error(
+            f'command_menu '
+            f'BAD {message.from_user.id} get {err.args}')
 
 
 async def command_about(message: types.Message):
-    logger.info(
-        f'command_about OK {message.from_user.id} looking at the about')
-
     try:
+        logger.info(
+            f'command_about OK {message.from_user.id} looking at the about')
+
         await Start.free.set()
         with open('about.txt', 'r') as file:
             answer = file.read()
@@ -87,10 +103,10 @@ async def command_about(message: types.Message):
 
 
 async def command_contacts(message: types.Message, state: FSMContext):
-    logger.info(
-        f'command_contacts OK {message.from_user.id} looking at the contacts')
-
     try:
+        logger.info(
+            f'command_contacts OK {message.from_user.id} looking at the contacts')
+
         current_state = await state.get_state()
         if current_state == None:
             await Start.free.set()
@@ -107,10 +123,10 @@ async def command_contacts(message: types.Message, state: FSMContext):
 
 
 async def command_delivery(message: types.Message, state: FSMContext):
-    logger.info(
-        f'command_delivery OK {message.from_user.id} looking at the delivery')
-
     try:
+        logger.info(
+            f'command_delivery OK {message.from_user.id} looking at the delivery')
+
         current_state = await state.get_state()
         if current_state == None:
             await Start.free.set()
@@ -128,10 +144,10 @@ async def command_delivery(message: types.Message, state: FSMContext):
 
 
 async def command_location(message: types.Message, state: FSMContext):
-    logger.info(
-        f'command_location OK {message.from_user.id} looking at the location')
-
     try:
+        logger.info(
+            f'command_location OK {message.from_user.id} looking at the location')
+
         current_state = await state.get_state()
         if current_state == None:
             await Start.free.set()
@@ -148,17 +164,27 @@ async def command_location(message: types.Message, state: FSMContext):
 
 async def unsupported_command(message: types.Message):
     try:
-        await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+        try:
+            await utils.delete_inline_keyboard(message.bot, message.from_user.id)
+            logger.info(
+                f'unsupported_command OK {message.from_user.id} inline keyboard was removed')
+        except MessageToDeleteNotFound:
+            logger.info(
+                f'unsupported_command OK {message.from_user.id} inline keyboard was removed earlier')
+        except Exception as err:
+            logger.error(
+                f'unsupported_command utils.delete_inline_keyboard '
+                f'BAD {message.from_user.id} get {err.args}')
+        logger.error(
+            f'unsupported_command BAD {message.from_user.id} unsupported command {message.text}')
+        await message.bot.send_message(chat_id=message.from_user.id,
+                                       text='Вибачте, я не розумію цю команду.\n' +
+                                       'Використовуйте, будь ласка, клавіатуру ⌨️⤵️',
+                                       reply_markup=reply.kb_start)
     except Exception as err:
         logger.error(
-            f'unsupported_command utils.delete_inline_keyboard '
+            f'unsupported_command '
             f'BAD {message.from_user.id} get {err.args}')
-    logger.error(
-        f'unsupported_command BAD {message.from_user.id} unsupported command {message.text}')
-    await message.bot.send_message(chat_id=message.from_user.id,
-                                   text='Вибачте, я не розумію цю команду.\n' +
-                                   'Використовуйте, будь ласка, клавіатуру ⌨️⤵️',
-                                   reply_markup=reply.kb_start)
 
 
 def register_user(dp: Dispatcher):
