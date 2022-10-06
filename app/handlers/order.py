@@ -60,7 +60,9 @@ async def command_change_order(message: types.Message, state: FSMContext):
 
         async with state.proxy() as data:
             try:
-                await message.bot.delete_message(message.from_user.id, data['msg_view_order'])
+                if data.get('msg_view_order'):
+                    await message.bot.delete_message(message.from_user.id, data['msg_view_order'])
+                    del data['msg_view_order']
             except MessageToDeleteNotFound:
                 logger.warning(
                     f'command_change_order '
@@ -113,7 +115,9 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
         if current_uid:
             async with state.proxy() as data:
                 try:
-                    await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
+                    if data.get('msg_change_order'):
+                        await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
+                        del data['msg_change_order']
                 except MessageToDeleteNotFound:
                     logger.warning(
                         f'command_change_quantity '
@@ -140,7 +144,7 @@ async def command_change_quantity(message: types.Message, state: FSMContext):
             except MessageToDeleteNotFound:
                 logger.warning(
                     f'command_change_quantity '
-                    f'OK {message.from_user.id} message was removed earlier')
+                    f'BAD {message.from_user.id} message was removed earlier')
             except KeyError as err:
                 logger.error(
                     f'command_change_quantity message.bot.delete_message '
@@ -196,7 +200,7 @@ async def command_del_product(message: types.Message, state: FSMContext):
         except MessageToDeleteNotFound:
             logger.warning(
                 f'command_del_product '
-                f'OK {message.from_user.id} message was removed earlier')
+                f'BAD {message.from_user.id} message was removed earlier')
         except KeyError as err:
             logger.error(
                 f'command_del_product message.bot.delete_message '
@@ -204,11 +208,13 @@ async def command_del_product(message: types.Message, state: FSMContext):
         if current_uid:
             async with state.proxy() as data:
                 try:
-                    await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
+                    if data.get('msg_change_order'):
+                        await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
+                        del data['msg_change_order']
                 except MessageToDeleteNotFound:
                     logger.warning(
                         f'command_del_product '
-                        f'OK {message.from_user.id} message was removed earlier')
+                        f'BAD {message.from_user.id} message was removed earlier')
                 except KeyError as err:
                     logger.error(
                         f'command_del_product message.bot.delete_message '
@@ -260,11 +266,13 @@ async def command_back_to_view_order(message: types.Message, state: FSMContext):
     try:
         data = await state.get_data()
         try:
-            await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
+            if data.get('msg_change_order'):
+                await message.bot.delete_message(message.from_user.id, data['msg_change_order'])
+                del data['msg_change_order']
         except MessageToDeleteNotFound:
             logger.warning(
                 f'command_back_to_view_order '
-                f'OK {message.from_user.id} message was removed earlier')
+                f'BAD {message.from_user.id} message was removed earlier')
         except KeyError as err:
             logger.error(
                 f'command_back_to_view_order message.bot.delete_message '
@@ -283,6 +291,19 @@ async def command_back_to_command_menu(message: types.Message, state: FSMContext
     try:
         logger.info(
             f'command_back_to_command_menu OK {message.from_user.id} back to menu')
+        data = await state.get_data()
+        try:
+            if data.get('msg_view_order'):
+                await message.bot.delete_message(message.from_user.id, data['msg_view_order'])
+                del data['msg_view_order']
+        except MessageToDeleteNotFound:
+            logger.warning(
+                f'command_back_to_command_menu '
+                f'BAD {message.from_user.id} message was removed earlier')
+        except KeyError as err:
+            logger.error(
+                f'command_back_to_command_menu message.bot.delete_message '
+                f'BAD {message.from_user.id} get {err.args}')
 
         await start.command_menu(message, state=state)
     except Exception as err:
