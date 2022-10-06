@@ -43,7 +43,7 @@ async def list_categories(message: Union[types.Message, types.CallbackQuery], st
 
             call = message
             logger.info(
-                f'list_categories OK {call.message.from_user.id} view the list of categories')
+                f'list_categories OK {call.from_user.id} view the list of categories')
 
             await call.message.edit_reply_markup(markup)
             # await utils.write_id_for_del_msg(message.from_user.id,
@@ -80,7 +80,7 @@ async def list_products(message: Union[types.Message, types.CallbackQuery], cate
         elif isinstance(message, types.CallbackQuery):
             call = message
             logger.info(
-                f'list_products OK {call.message.from_user.id} view the list of products')
+                f'list_products OK {call.from_user.id} view the list of products')
 
             await call.message.edit_reply_markup(markup)
     except Exception as err:
@@ -185,7 +185,7 @@ async def navigate(call: types.CallbackQuery, state: FSMContext, callback_data: 
     except Exception as err:
         logger.error(
             f'navigate '
-            f'BAD {call.message.from_user.id} get {err.args}')
+            f'BAD {call.from_user.id} get {err.args}')
 
 
 def register_menu(dp: Dispatcher):
