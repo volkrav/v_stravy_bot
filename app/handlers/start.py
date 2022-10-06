@@ -47,8 +47,8 @@ async def user_start(message: types.Message, state: FSMContext):
                 logger.info(
                     f'user_start OK {message.from_user.id} inline keyboard was removed')
             except MessageToDeleteNotFound:
-                logger.info(
-                    f'user_start OK {message.from_user.id} inline keyboard was removed earlier')
+                logger.warning(
+                    f'user_start BAD {message.from_user.id} inline keyboard was removed earlier')
             except Exception as err:
                 logger.error(
                     f'user_start utils.delete_inline_keyboard '
@@ -169,13 +169,13 @@ async def unsupported_command(message: types.Message):
             logger.info(
                 f'unsupported_command OK {message.from_user.id} inline keyboard was removed')
         except MessageToDeleteNotFound:
-            logger.info(
-                f'unsupported_command OK {message.from_user.id} inline keyboard was removed earlier')
+            logger.warning(
+                f'unsupported_command BAD {message.from_user.id} inline keyboard was removed earlier')
         except Exception as err:
             logger.error(
                 f'unsupported_command utils.delete_inline_keyboard '
                 f'BAD {message.from_user.id} get {err.args}')
-        logger.error(
+        logger.warning(
             f'unsupported_command BAD {message.from_user.id} unsupported command {message.text}')
         await message.bot.send_message(chat_id=message.from_user.id,
                                        text='Вибачте, я не розумію цю команду.\n' +

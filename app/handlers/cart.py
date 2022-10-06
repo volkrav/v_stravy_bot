@@ -24,8 +24,8 @@ async def add_to_basket(message: types.CallbackQuery, state: FSMContext):
             logger.info(
                 f'add_to_basket OK {message.from_user.id} inline keyboard was removed')
         except MessageToDeleteNotFound:
-            logger.info(
-                f'add_to_basket OK {message.from_user.id} inline keyboard was removed earlier')
+            logger.warning(
+                f'add_to_basket BAD {message.from_user.id} inline keyboard was removed earlier')
         except Exception as err:
             logger.error(
                 f'add_to_basket utils.delete_inline_keyboard '
@@ -66,7 +66,7 @@ async def add_quantity_to_order(message: types.Message, state: FSMContext):
                 await Buy.free_state.set()
                 await list_products(message, data['partuid'], state=state)
         except ValueError:
-            logger.error(
+            logger.warning(
                 f'add_quantity_to_order '
                 f'BAD {message.from_user.id} unsupported command {message.text}')
 

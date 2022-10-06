@@ -153,8 +153,8 @@ async def command_exit(message: types.Message, state: FSMContext):
             logger.info(
                 f'command_exit OK {message.from_user.id} inline keyboard was removed')
         except MessageToDeleteNotFound:
-            logger.info(
-                f'command_exit OK {message.from_user.id} inline keyboard was removed earlier')
+            logger.warning(
+                f'command_exit BAD {message.from_user.id} inline keyboard was removed earlier')
         except Exception as err:
             logger.error(
                 f'command_exit utils.delete_inline_keyboard '

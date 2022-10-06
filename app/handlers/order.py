@@ -26,8 +26,8 @@ async def command_view_order(message: types.Message, state: FSMContext):
             logger.info(
                 f'command_view_order OK {message.from_user.id} inline keyboard was removed')
         except MessageToDeleteNotFound:
-            logger.info(
-                f'command_view_order OK {message.from_user.id} inline keyboard was removed earlier')
+            logger.warning(
+                f'command_view_order BAD {message.from_user.id} inline keyboard was removed earlier')
         except Exception as err:
             logger.error(
                 f'command_view_order utils.delete_inline_keyboard '
@@ -164,7 +164,7 @@ async def add_new_quantity(message: types.Message, state: FSMContext):
 
             await command_change_order(message, state)
         except ValueError:
-            logger.error(
+            logger.warning(
                 f'add_new_quantity '
                 f'BAD {message.from_user.id} entered the wrong value {message.text}')
 

@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 
 async def command_start_ordering(message: types.Message, state: FSMContext):
+    logger.info(
+        f'command_start_ordering OK {message.from_user.id} started placing an order')
+
     try:
         async with state.proxy() as data:
             data.setdefault('ordering', {})
@@ -29,8 +32,7 @@ async def command_start_ordering(message: types.Message, state: FSMContext):
             f'BAD {message.from_user.id} get {err.args}')
 
     await message.answer('Готовий до оформлення замовлення')
-    logger.info(
-        f'command_start_ordering OK {message.from_user.id} started placing an order')
+
     try:
         if await utils.check_user_in_users(message.from_user.id):
             await Ordering.ask_user_used_data.set()
@@ -66,7 +68,7 @@ async def command_delivery_or_pickup(message: types.Message, state: FSMContext):
             answer = "Оформити замовлення з доставкою?"
             await Ordering.delivery.set()
         else:
-            logger.error(
+            logger.warning(
                 f'command_delivery_or_pickup BAD {message.from_user.id} unsupported command {message.text}')
             return await message.answer('Потрібно вибрати "Самовивіз" або "Доставка" ⌨️⤵️',
                                         reply_markup=reply.kb_delivery_or_pickup)
@@ -139,7 +141,7 @@ async def command_yes_or_no(message: types.Message, state: FSMContext):
 
         # Обробка непідтримуваної команди
         else:
-            logger.error(
+            logger.warning(
                 f'command_yes_or_no BAD {message.from_user.id} unsupported command {message.text}')
             if (current_state == 'Ordering:pickup' or
                     current_state == 'Ordering:delivery'):
@@ -217,7 +219,7 @@ async def command_write_phone(message: types.Message, state: FSMContext):
         else:
             await message.answer('Натисніть, будь ласка, "Відправити номер" ⌨️⤵️',
                                 reply_markup=reply.kb_share_contact)
-            logger.error(
+            logger.warning(
                 f'command_write_phone BAD {message.from_user.id} '
                 f'unsupported command {message.text}')
     except Exception as err:

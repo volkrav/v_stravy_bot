@@ -28,7 +28,7 @@ async def bot_echo(message: types.Message, state: FSMContext):
             logger.info(
                 f'bot_echo OK {message.from_user.id} inline keyboard was removed')
         except MessageToDeleteNotFound:
-            logger.info(
+            logger.warning(
                 f'bot_echo OK {message.from_user.id} inline keyboard was removed earlier')
         except Exception as err:
             logger.error(
