@@ -4,7 +4,7 @@ __pycache__
 .cache
 
 # pipenv
-Pipfile*
+# Pipfile*
 
 runbot.sh
 *.bak
