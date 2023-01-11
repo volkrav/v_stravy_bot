@@ -67,11 +67,12 @@ async def main():
 
     try:
         await dp.skip_updates()
-        await dp.start_polling(dp)
+        await dp.start_polling()
     finally:
         await dp.storage.close()
         await dp.storage.wait_closed()
-        await bot.session.close()
+        session = await bot.get_session()
+        await session.close()
 
 
 if __name__ == '__main__':
@@ -79,8 +80,5 @@ if __name__ == '__main__':
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logger.error('Bot stopped!')
-    except NetworkError:
-        logger.error('get NetworkError, try restart')
-        asyncio.run(main())
     except Exception as err:
-        logger.error(f'get {err.args}')
+        logger.error(f'<__main__> get {err.args}')

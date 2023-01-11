@@ -20,7 +20,7 @@ async def bot_echo(message: types.Message, state: FSMContext):
             f'Вітаю {message.from_user.first_name}\n\n'
             f'Це Vasylevsky Stravy бот, я допомагаю '
             f'оформлювати замовлення.\n'
-            f'Ви ввели команду, яку я не розумію.\n\n<b>Використайте, будь-ласка, <u>клавіатуру</u> '
+            f'Ви ввели команду, яку я не розумію.\n\n<b>Використайте, будь ласка, <u>клавіатуру</u> '
             f'або перезавантажте бота командою /start</b>'
         )
         try:

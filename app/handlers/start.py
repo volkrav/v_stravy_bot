@@ -111,8 +111,10 @@ async def command_contacts(message: types.Message, state: FSMContext):
         if current_state == None:
             await Start.free.set()
         await message.bot.send_message(chat_id=message.from_user.id,
-                                       text='<b>ГРИЛЬ-БАР "МИСЛИВЦІ"</b>\n\n' +
-                                       '🗺 Адреса: м. Київ, вул. Шовковична 13/2\n' +
+                                       text='<b>Магазин "Василевські заморожені страви"</b>\n' +
+                                       '🗺 Адреса: м. Київ, вул. Ревуцького 42\n\n'
+                                       '<b>ГРИЛЬ-БАР "МИСЛИВЦІ"</b>\n' +
+                                       '🗺 Адреса: м. Київ, вул. Шовковична 13/2\n\n' +
                                        '📞 Телефон: +38 (063) 014-20-60\n' +
                                        '✉️ E-mail: barohotnikk@ukr.net\n',
                                        reply_markup=inline.kb_about)
@@ -153,8 +155,8 @@ async def command_location(message: types.Message, state: FSMContext):
             await Start.free.set()
         await message.bot.send_message(chat_id=message.from_user.id,
                                        text='Самостійно забрати замовлення можна за адресою:\n\n'
-                                       'м. Київ, вул. Шовковичнa 13/2.\n'
-                                       'Гриль-бар "Мисливці"\n\n'
+                                       'м. Київ, вул. Ревуцького 42.\n'
+                                       'Магазин "Василевські заморожені страви"\n\n'
                                        '<b>Знижка при самовивозі -10%</b>')
     except Exception as err:
         logger.error(
