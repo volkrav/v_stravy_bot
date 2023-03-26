@@ -113,8 +113,6 @@ async def command_contacts(message: types.Message, state: FSMContext):
         await message.bot.send_message(chat_id=message.from_user.id,
                                        text='<b>Магазин "Василевські заморожені страви"</b>\n' +
                                        '🗺 Адреса: м. Київ, вул. Ревуцького 42\n\n'
-                                       '<b>ГРИЛЬ-БАР "МИСЛИВЦІ"</b>\n' +
-                                       '🗺 Адреса: м. Київ, вул. Шовковична 13/2\n\n' +
                                        '📞 Телефон: +38 (063) 014-20-60\n' +
                                        '✉️ E-mail: barohotnikk@ukr.net\n',
                                        reply_markup=inline.kb_about)
