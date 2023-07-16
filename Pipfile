@@ -16,6 +16,7 @@ lxml = "*"
 [dev-packages]
 autopep8 = "*"
 aioredis = "*"
+ipykernel = "*"
 
 [requires]
 python_version = "3.10"

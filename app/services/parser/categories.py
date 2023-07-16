@@ -31,7 +31,7 @@ def main():
         soup = BeautifulSoup(response.text, 'html.parser')
         try:
             data = soup.find(
-                'ul', class_='t967__list t967__menualign_left').find_all(
+                'ul', class_='t967__list t-menu__list t967__menualign_left').find_all(
                 'li', class_='t967__list-item')
         except Exception as err:
             logger.error(f'data = soup.find get {err.args}')

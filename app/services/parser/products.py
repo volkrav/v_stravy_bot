@@ -30,7 +30,7 @@ def main():
         for products in get_products(categories_id, header):
             for product in get_product(products):
 
-                uid = product['uid'].strip()
+                uid = str(product['uid'])
                 title = product['title'].strip()
                 price = int(float(product['price'].strip()))
 
@@ -61,7 +61,7 @@ def main():
                 gallery = gallery.strip(',')
 
                 url = product['url'].strip()
-                partuids = ','.join(json.loads(product['partuids']))
+                partuids = ','.join([str(partuid) for partuid in json.loads(product['partuids'])])
 
                 try:
                     with UseDataBase() as cursor:
