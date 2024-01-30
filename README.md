@@ -48,12 +48,12 @@ sudo apt update && sudo apt upgrade -y
 	4. Встановимо менеджер пакетів Python (PIP)
 	```bash
 	sudo apt install python3-pip
-```
+ 	```
 
 	5. Встановимо pipenv
 	```bash
 	python -m pip install pipenv
-```
+ 	```
 
 3. Клонуємо репозиторій з github
 ```bash
@@ -80,5 +80,5 @@ python3 bot.py
 
 При першому запуску бот самостійно створить базу даних. Для заповнення товарами використати команду /parser з акаунту адміністратора бота або командою:
 ```bash
-pyton3 startparser.py
+python3 startparser.py
 ```
